@@ -1,0 +1,120 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETCoreApp,Version=v3.0": {
+      "ExtendedWpfControls/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.0",
+        "compile": {
+          "bin/placeholder/ExtendedWpfControls.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ExtendedWpfControls.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.WindowsDesktop.App.WPF"
+        ]
+      },
+      "MVVMSupport/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/MVVMSupport.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MVVMSupport.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ExtendedWpfControls/1.0.0": {
+      "type": "project",
+      "path": "../ExtendedWpfControls/ExtendedWpfControls.csproj",
+      "msbuildProject": "../ExtendedWpfControls/ExtendedWpfControls.csproj"
+    },
+    "MVVMSupport/1.0.0": {
+      "type": "project",
+      "path": "../MVVMSupport/MVVMSupport.csproj",
+      "msbuildProject": "../MVVMSupport/MVVMSupport.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETCoreApp,Version=v3.0": [
+      "ExtendedWpfControls >= 1.0.0",
+      "MVVMSupport >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\falkv\\.nuget\\packages\\": {},
+    "C:\\Microsoft\\Xamarin\\NuGet\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\AdventOfCode\\AdventOfCode.csproj",
+      "projectName": "AdventOfCode",
+      "projectPath": "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\AdventOfCode\\AdventOfCode.csproj",
+      "packagesPath": "C:\\Users\\falkv\\.nuget\\packages\\",
+      "outputPath": "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\AdventOfCode\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Microsoft\\Xamarin\\NuGet\\",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\falkv\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "netcoreapp3.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "projectReferences": {
+            "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\ExtendedWpfControls\\ExtendedWpfControls.csproj": {
+              "projectPath": "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\ExtendedWpfControls\\ExtendedWpfControls.csproj"
+            },
+            "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\MVVMSupport\\MVVMSupport.csproj": {
+              "projectPath": "D:\\Repositories\\C#\\AdventOfCode\\AdventOfCode2019\\src\\AdventOfCode\\MVVMSupport\\MVVMSupport.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "netcoreapp3.0": {
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          },
+          "Microsoft.WindowsDesktop.App.WPF": {
+            "privateAssets": "none"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

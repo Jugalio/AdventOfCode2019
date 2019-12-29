@@ -1,0 +1,47 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.0": {
+      "AdventOfCode/1.0.0": {
+        "dependencies": {
+          "ExtendedWpfControls": "1.0.0",
+          "MVVMSupport": "1.0.0"
+        },
+        "runtime": {
+          "AdventOfCode.dll": {}
+        }
+      },
+      "ExtendedWpfControls/1.0.0": {
+        "runtime": {
+          "ExtendedWpfControls.dll": {}
+        }
+      },
+      "MVVMSupport/1.0.0": {
+        "runtime": {
+          "MVVMSupport.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AdventOfCode/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ExtendedWpfControls/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MVVMSupport/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
