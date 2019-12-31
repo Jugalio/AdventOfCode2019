@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AdventOfCode.Views"
+        xmlns:console="clr-namespace:AdventOfCode.Views.Console"
         xmlns:viewmodel="clr-namespace:AdventOfCode.ViewModels"
         xmlns:controls="clr-namespace:ExtendedWpfControls;assembly=ExtendedWpfControls"
         mc:Ignorable="d"
@@ -65,13 +66,6 @@
         <Button Content="Day 23" Command="{Binding Day23Command}" Grid.Row="3" Grid.Column="4"/>
         <Button Content="Day 24" Command="{Binding Day24Command}" Grid.Row="3" Grid.Column="5"/>
 
-        <controls:ExtendedListView Grid.Row="4" Grid.ColumnSpan="6"
-                 Background="Black"
-                 Foreground="Green"
-                 AutoScroll="True"
-                 ItemsSource="{Binding ConsoleMessages}">
-            
-        </controls:ExtendedListView>
-
+        <console:Console Grid.Row="4" Grid.ColumnSpan="6"/>
     </Grid>
 </Window>

@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_0
 D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\App.xaml
-11892971807
+4-396112209
 
-9-655884956
+22-41708709
 194-834632770
-Views\MainWindow.xaml;
+Views\Console\Console.xaml;Views\Console\ConsoleMessage.xaml;Views\Inputs\Input.xaml;Views\MainWindow.xaml;
 
 False
 

@@ -1,6 +1,11 @@
 ﻿using AdventOfCode.Challenges.Day1;
+using AdventOfCode.Challenges.Day3;
+using AdventOfCode.Challenges.Day4;
+using AdventOfCode.Challenges.Day6;
 using AdventOfCode.Challenges.IntCodeComputer;
 using AdventOfCode.DataReader;
+using AdventOfCode.ViewModels.Console;
+using AdventOfCode.Views.Inputs;
 using MVVMSupport;
 using System;
 using System.Collections.Generic;
@@ -9,13 +14,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace AdventOfCode.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
         private DirectoryInfo _inputFolder;
-        public ObservableCollection<ConsoleMessage> ConsoleMessages { get; set; } = new ObservableCollection<ConsoleMessage>();
+        private IReceiveInput _inputReader = new PopupInput();
+        public ObservableCollection<IShowOnConsole> ConsoleMessages { get; set; } = new ObservableCollection<IShowOnConsole>();
 
         public RelayCommand Day1Command { get; set; }
         public RelayCommand Day2Command { get; set; }
@@ -100,7 +107,7 @@ namespace AdventOfCode.ViewModels
             var parser = GetInputParser("Day1Input.txt");
             var masses = parser.GetInputData().Select(m => double.Parse(m));
 
-            var fuelCalc = new FuelCalculation(WriteToConsole);
+            var fuelCalc = new FuelCalculation();
             var fuel = fuelCalc.CalculateFuel(masses);
             WriteToConsole($"For the given modules {fuel.ToString("N")} fuel is required");
 
@@ -120,8 +127,8 @@ namespace AdventOfCode.ViewModels
             code[1] = 12;
             code[2] = 2;
 
-            var intComputer = new IntCodeComputer(WriteToConsole);
-            var finalCode = intComputer.HandleOpCode(0, code);
+            var intComputer = new IntCodeComputer(code, WriteToConsole, _inputReader);
+            var finalCode = intComputer.Compute();
             WriteToConsole($"After execution the value at position 0 is {finalCode[0].ToString("N")}");
 
             AddEmptyLine();
@@ -137,7 +144,8 @@ namespace AdventOfCode.ViewModels
                     var testCode = originalCode.ToList();
                     testCode[1] = noun;
                     testCode[2] = verb;
-                    var exitCode = intComputer.HandleOpCode(0, testCode);
+                    intComputer = new IntCodeComputer(testCode, WriteToConsole, _inputReader);
+                    var exitCode = intComputer.Compute();
                     
                     if(exitCode[0] == 19690720)
                     {
@@ -160,7 +168,30 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute3()
         {
+            WriteToConsole("Start execution of Day3");
+            var parser = GetInputParser("Day3Input.txt");
 
+            var startingPoint = new CoordinatePoint(0, 0);
+            var wires = parser.GetInputData().Select(line => new Wire(startingPoint, line.Split(','))).ToList();
+
+            var wire1 = wires[0];
+            var wire2 = wires[1];
+
+            var intersections = wire1.GetIntersectionsWith(wire2);
+            var board = new GridBoard();
+            var closestPoint = board.GetClosestPointTo(intersections, startingPoint);
+
+            WriteToConsole($"The closest intersection point is located at {closestPoint.point} with a distance to the starting point of {closestPoint.distance}");
+
+            AddEmptyLine();
+
+            WriteToConsole($"Now we want to find the closest intersection based on the steps both wires combined have to take to reach it");
+
+            var firstIntersection = wire1.GetFirstIntersectionWith(wire2);
+
+            WriteToConsole($"The first intersection point is located at {firstIntersection.point} with a total number of {firstIntersection.steps} steps");
+
+            AddEmptyLine();
         }
 
         /// <summary>
@@ -168,7 +199,35 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute4()
         {
+            WriteToConsole("Start execution of Day4");
+            var parser = GetInputParser("Day4Input.txt");
 
+            var stringRange = parser.GetInputData().First().Split('-');
+
+            var start = int.Parse(stringRange[0]);
+            var end = int.Parse(stringRange[1]);
+
+            var range = Enumerable.Range(start, end - start);
+
+            var candidates1 = range.Where(i =>
+            {
+                return CriteriaFunctions.AdjacentEqual(i.ToString()) &&
+                CriteriaFunctions.NeverDecreasing(i.ToString());
+            });
+
+            WriteToConsole($"Found {candidates1.Count()} possible passwords, that satisfy the first set of criteria functions");
+
+            AddEmptyLine();
+
+            var candidates2 = range.Where(i =>
+            {
+                return CriteriaFunctions.AdjacentEqualNoGroup(i.ToString()) &&
+                CriteriaFunctions.NeverDecreasing(i.ToString());
+            });
+
+            WriteToConsole($"Found {candidates2.Count()} possible passwords, that satisfy the second set of criteria functions");
+
+            AddEmptyLine();
         }
 
         /// <summary>
@@ -176,7 +235,16 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute5()
         {
+            WriteToConsole("Start execution of Day5");
+            var parser = GetInputParser("Day5Input.txt");
+            var originalCode = parser.GetIntCode();
+            var code = originalCode.ToList();
 
+            var intComputer = new IntCodeComputer(code, WriteToConsole, _inputReader);
+            var finalCode = intComputer.Compute();
+            WriteToConsole($"Diagnostics finished");
+
+            AddEmptyLine();
         }
 
         /// <summary>
@@ -184,7 +252,23 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute6()
         {
+            WriteToConsole("Start execution of Day6");
+            var parser = GetInputParser("Day6Input.txt");
+            var input = parser.GetInputData();
 
+            var map = new OrbitMap(input);
+            var orbits = map.GetNumberOfOrbits();
+
+            WriteToConsole($"The given map has {orbits.ToString("N")} orbits");
+            AddEmptyLine();
+
+            WriteToConsole($"Now we want to find the shortest orbital transfer from YOU to SAN");
+
+            var you = map.SpaceObjects.FirstOrDefault(o => o.Id == "YOU");
+            var san = map.SpaceObjects.FirstOrDefault(o => o.Id == "SAN");
+            var (distance, path) = you.GetTransfersToReach(san);
+
+            WriteToConsole($"The shortest transfer from YOU to SAN takes {distance} transfers with the route {path}");
         }
 
         /// <summary>

@@ -9,17 +9,8 @@ namespace AdventOfCode.Challenges.Day1
 {
     public class FuelCalculation
     {
-        private Action<string> _writeToConsole;
-
-        public FuelCalculation(Action<string> writeToConsole)
-        {
-            _writeToConsole = writeToConsole;
-        }
-
         public int CalculateFuel(IEnumerable<double> masses)
         {
-            _writeToConsole($"Calculating the fuel for {masses.Count()} modules");
-
             return masses.Select(mass =>
             {
                 var fuelforModule = CalculateFuelByMass(mass);

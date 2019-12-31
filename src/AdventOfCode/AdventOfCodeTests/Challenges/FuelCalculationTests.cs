@@ -7,6 +7,7 @@ using System.Text;
 
 namespace AdventOfCodeTests.Challenges
 {
+    [TestFixture]
     public class FuelCalculationTests
     {
 
@@ -16,7 +17,7 @@ namespace AdventOfCodeTests.Challenges
         [TestCase(100756, 33583)]
         public void TestCalculateFuelByMass(double mass, int fuel)
         {
-            var calc = new FuelCalculation((string s) => Console.WriteLine(s));
+            var calc = new FuelCalculation();
             Assert.IsTrue(calc.CalculateFuelByMass(mass) == fuel);
         }
 
@@ -25,7 +26,7 @@ namespace AdventOfCodeTests.Challenges
         [TestCase(100756, 50346)]
         public void TestCalculateFuelByFuel(double mass, int fuel)
         {
-            var calc = new FuelCalculation((string s) => Console.WriteLine(s));
+            var calc = new FuelCalculation();
             var fuelForMass = calc.CalculateFuelByMass(mass);
             var fuelForFuel = calc.CalcFuelForFuel(fuelForMass, 0);
             Assert.IsTrue(fuelForMass + fuelForFuel == fuel);

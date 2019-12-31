@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdventOfCode.Views.Inputs;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,11 +11,16 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     /// </summary>
     public class IntCodeComputer
     {
-        private Action<string> _writeToConsole;
+        private Action<string> _write;
+        private Instruction _currentInstruction;
+        private List<int> _code;
+        private IReceiveInput _inputReader;
 
-        public IntCodeComputer(Action<string> writeToConsole)
+        public IntCodeComputer(List<int> code, Action<string> write, IReceiveInput inputReader)
         {
-            _writeToConsole = writeToConsole;
+            _write = write;
+            _code = code;
+            _inputReader = inputReader;
         }
 
         /// <summary>
@@ -25,20 +31,55 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// <param name="instructionPointer"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        public List<int> HandleOpCode(int instructionPointer, List<int> code)
+        public List<int> Compute()
         {
-            var instruction = code[instructionPointer];
+            var instructionPointer = _currentInstruction?.NextPointer ?? 0;
+            _currentInstruction = new Instruction(instructionPointer, _code);
 
-            switch (instruction)
+            switch (_currentInstruction.OpCode)
             {
-                case 1:
-                    return HandleOpCode(instructionPointer + 4, Addition(instructionPointer, code));
-                case 2:
-                    return HandleOpCode(instructionPointer + 4, Multiplication(instructionPointer, code));
-                case 99:
-                    return code;
+                case InstructionModes.Exit:
+                    return _code;
                 default:
-                    return new List<int>() { -1 };
+                    ExecuteOpCode();
+                    return Compute();
+            }
+        }
+
+        /// <summary>
+        /// Exxecutes the defined function for a given opCode
+        /// </summary>
+        /// <returns></returns>
+        public void ExecuteOpCode()
+        {
+            switch (_currentInstruction.OpCode)
+            {
+                case InstructionModes.Addition:
+                    Addition();
+                    break;
+                case InstructionModes.Multiplication:
+                    Multiplication();
+                    break;
+                case InstructionModes.Input:
+                    Input();
+                    break;
+                case InstructionModes.Output:
+                    Output();
+                    break;
+                case InstructionModes.JumpIfTrue:
+                    JumpIfTrue();
+                    break;
+                case InstructionModes.JumpIfFalse:
+                    JumpIfFalse();
+                    break;
+                case InstructionModes.LessThan:
+                    LessThan();
+                    break;
+                case InstructionModes.Equals:
+                    Equals();
+                    break;
+                default:
+                    throw new Exception($"OpCode {_currentInstruction.OpCode} unkonwn");
             }
         }
 
@@ -47,12 +88,9 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// with the number at position index + 2
         /// and overrides the number at position index + 3
         /// </summary>
-        /// <param name="instructionPointer"></param>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        private List<int> Addition(int instructionPointer, List<int> code)
+        private void Addition()
         {
-            return RunFunction(instructionPointer, code, (int a, int b) => a + b);
+            RunFunction((int a, int b) => a + b);
         }
 
         /// <summary>
@@ -60,27 +98,103 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// with the number at position index + 2
         /// and overrides the number at position index + 3
         /// </summary>
-        /// <param name="instructionPointer"></param>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        private List<int> Multiplication(int instructionPointer, List<int> code)
+        private void Multiplication()
         {
-            return RunFunction(instructionPointer, code, (int a, int b) => a * b);
+            RunFunction((int a, int b) => a * b);
+        }
+
+        /// <summary>
+        /// Reads an input parameter
+        /// </summary>
+        private void Input()
+        {
+            var input = _inputReader.GetInput();
+            _write($"Userinput: {input}");
+
+            var inputInteger = int.Parse(input);
+            _currentInstruction.SetValue(ref _code, 0, inputInteger);
+        }
+
+
+        /// <summary>
+        /// Outputs a parameter
+        /// </summary>
+        private void Output()
+        {
+            _write(_currentInstruction.GetParameterValue(_code, 0).ToString());
+        }
+
+        /// <summary>
+        /// Resets the instruction point if true
+        /// </summary>
+        private void JumpIfTrue()
+        {
+            var num1 = _currentInstruction.GetParameterValue(_code, 0);
+            if (num1 != 0)
+            {
+                _currentInstruction.NextPointer = _currentInstruction.GetParameterValue(_code, 1);
+            }
+        }
+
+        /// <summary>
+        /// Resets the instruction point if false
+        /// </summary>
+        private void JumpIfFalse()
+        {
+            var num1 = _currentInstruction.GetParameterValue(_code, 0);
+            if (num1 == 0)
+            {
+                _currentInstruction.NextPointer = _currentInstruction.GetParameterValue(_code, 1);
+            }
+        }
+
+        /// <summary>
+        /// Compares two parameters and checks if the first is less than the second
+        /// </summary>
+        private void LessThan()
+        {
+            var num1 = _currentInstruction.GetParameterValue(_code, 0);
+            var num2 = _currentInstruction.GetParameterValue(_code, 1);
+
+            if (num1 < num2)
+            {
+                _currentInstruction.SetValue(ref _code, 2, 1);
+            }
+            else
+            {
+                _currentInstruction.SetValue(ref _code, 2, 0);
+            }
+        }
+
+        /// <summary>
+        /// Compares two parameters and checks if they are equal
+        /// </summary>
+        private void Equals()
+        {
+            var num1 = _currentInstruction.GetParameterValue(_code, 0);
+            var num2 = _currentInstruction.GetParameterValue(_code, 1);
+
+            if (num1 == num2)
+            {
+                _currentInstruction.SetValue(ref _code, 2, 1);
+            }
+            else
+            {
+                _currentInstruction.SetValue(ref _code, 2, 0);
+            }
         }
 
         /// <summary>
         /// Runs the defined function on the code
         /// </summary>
-        /// <param name="instructionPointer"></param>
-        /// <param name="code"></param>
         /// <param name="delegateFunc"></param>
         /// <returns></returns>
-        private List<int> RunFunction(int instructionPointer, List<int> code, Func<int, int, int> delegateFunc)
+        private void RunFunction(Func<int, int, int> delegateFunc)
         {
-            var num1 = code[code[instructionPointer + 1]];
-            var num2 = code[code[instructionPointer + 2]];
-            code[code[instructionPointer + 3]] = delegateFunc(num1, num2);
-            return code;
+            var num1 = _currentInstruction.GetParameterValue(_code, 0);
+            var num2 = _currentInstruction.GetParameterValue(_code, 1);
+
+            _currentInstruction.SetValue(ref _code, 2, delegateFunc(num1, num2));
         }
 
     }

@@ -7,6 +7,26 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\Console\Console.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Console\ConsoleMessage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Inputs\Input.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Console\Console.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Console\ConsoleMessage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Inputs\Input.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>

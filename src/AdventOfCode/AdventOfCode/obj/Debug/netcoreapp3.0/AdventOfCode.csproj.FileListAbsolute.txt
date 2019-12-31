@@ -23,3 +23,13 @@ D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\o
 D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\ExtendedWpfControls.dll
 D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\ExtendedWpfControls.pdb
 D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\InputData\Day2Input.txt
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\InputData\Day3Input.txt
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\InputData\Day4Input.txt
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Console\Console.g.cs
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Console\ConsoleMessage.g.cs
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Console\Console.baml
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Console\ConsoleMessage.baml
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Inputs\Input.g.cs
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\obj\Debug\netcoreapp3.0\Views\Inputs\Input.baml
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\InputData\Day5Input.txt
+D:\Repositories\C#\AdventOfCode\AdventOfCode2019\src\AdventOfCode\AdventOfCode\bin\Debug\netcoreapp3.0\InputData\Day6Input.txt
