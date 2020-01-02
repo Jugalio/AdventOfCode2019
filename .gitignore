@@ -4,6 +4,13 @@
 # Visual Studio
 .vs/
 
+# Build
+bin/
+obj/
+
+# User
+*.user
+
 # Object files
 *.o
 *.ko
