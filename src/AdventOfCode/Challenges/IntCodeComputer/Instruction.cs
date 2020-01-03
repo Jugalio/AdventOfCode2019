@@ -7,6 +7,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 {
     public class Instruction
     {
+        public int RelativeBase = 0;
         public int InstructionPointer;
         public InstructionModes OpCode;
         public List<ParameterModes> Modes = new List<ParameterModes>();
@@ -21,7 +22,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         /// <param name="instructionPointer"></param>
         /// <param name="code"></param>
-        public Instruction(int instructionPointer, List<int> code)
+        public Instruction(int instructionPointer, List<long> code)
         {
             InstructionPointer = instructionPointer;
 
@@ -64,6 +65,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
                 InstructionModes.JumpIfFalse => 2,
                 InstructionModes.LessThan => 3,
                 InstructionModes.Equals => 3,
+                InstructionModes.RelativeBaseOffset => 1,
                 _ => 0,
             };
         }
@@ -72,31 +74,58 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// Gets the parameter depending on its mode from the code
         /// </summary>
         /// <param name="code"></param>
-        /// <param name="paremeterPosition"></param>
+        /// <param name="parameterPosition"></param>
         /// <returns></returns>
-        public int GetParameterValue(List<int> code, int paremeterPosition)
+        public long GetParameterValue(ref List<long> code, int parameterPosition)
         {
-            var mode = Modes[paremeterPosition];
-            return mode == ParameterModes.PositionMode ? code[code[InstructionPointer + paremeterPosition + 1]] : code[InstructionPointer + paremeterPosition + 1];
+            var adress = GetAdress(ref code, parameterPosition);
+            return code[adress];
         }
 
         /// <summary>
         /// Sets a value depending on the parameter mode
         /// </summary>
         /// <param name="code"></param>
-        /// <param name="paremeterPosition"></param>
+        /// <param name="parameterPosition"></param>
         /// <param name="value"></param>
-        public void SetValue(ref List<int> code, int paremeterPosition, int value)
+        public void SetValue(ref List<long> code, int parameterPosition, long value)
         {
-            var mode = Modes[paremeterPosition];
-            if (mode == ParameterModes.PositionMode)
+            var adress = GetAdress(ref code, parameterPosition);
+            code[adress] = value;
+        }
+
+        /// <summary>
+        /// Get the adress by parameter mode
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="parameterPosition"></param>
+        /// <returns></returns>
+        private int GetAdress(ref List<long> code, int parameterPosition)
+        {
+            var adress = Modes[parameterPosition] switch
             {
-                code[code[InstructionPointer + paremeterPosition + 1]] = value;
-            }
-            else
-            {
-                throw new Exception("Writting only works in position mode");
+                ParameterModes.PositionMode => (int)code[CheckMemoryAdress(InstructionPointer + parameterPosition + 1, ref code)],
+                ParameterModes.ImmediateMode => InstructionPointer + parameterPosition + 1,
+                ParameterModes.RelativeMode => (int)code[CheckMemoryAdress(InstructionPointer + parameterPosition + 1, ref code)] + RelativeBase,
+                _ => throw new ArgumentException("Parameter mode unknown"),
             };
+
+            return CheckMemoryAdress(adress, ref code);
+        }
+
+        /// <summary>
+        /// Checks the memory adress and increases the memory if necessary
+        /// </summary>
+        /// <param name="adress"></param>
+        /// <returns></returns>
+        private int CheckMemoryAdress(int adress, ref List<long> code)
+        {
+            if (code.Count <= adress)
+            {
+                var increase = Enumerable.Range(0, adress - code.Count + 1).Select(m => (long)0);
+                code.AddRange(increase);
+            }
+            return adress;
         }
     }
 
@@ -107,6 +136,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     {
         PositionMode,
         ImmediateMode,
+        RelativeMode,
     }
 
     /// <summary>
@@ -123,6 +153,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         JumpIfFalse,
         LessThan,
         Equals,
+        RelativeBaseOffset,
         Exit = 99,
     }
 }

@@ -21,9 +21,10 @@ namespace AdventOfCode.Views.Inputs
         public bool OkClicked = false;
         public string InputString;
 
-        public Input()
+        public Input(string labelText)
         {
             InitializeComponent();
+            label.Text = labelText;
             txtBox.Focus();
         }
 

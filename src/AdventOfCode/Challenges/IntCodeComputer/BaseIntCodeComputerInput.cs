@@ -19,13 +19,13 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// <summary>
         /// All inputs in a queue
         /// </summary>
-        protected Queue<int> Inputs = new Queue<int>();
+        protected Queue<long> Inputs = new Queue<long>();
 
         /// <summary>
         /// Adds a new input to the queue
         /// </summary>
         /// <param name="input"></param>
-        public void AddNewInput(int input)
+        public void AddNewInput(long input)
         {
             Inputs.Enqueue(input);
             if (_hasOpenRequest)
@@ -43,7 +43,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// Requests an input for the int code computer
         /// </summary>
         /// <returns></returns>
-        public async Task<int> RequestInput()
+        public async Task<long> RequestInput()
         {
             var input = await Task.Run(() =>
             {

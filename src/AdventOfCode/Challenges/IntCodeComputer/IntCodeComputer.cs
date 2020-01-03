@@ -14,12 +14,13 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     public class IntCodeComputer
     {
         private Instruction _currentInstruction;
-        public List<int> Code;
+        public List<long> Code;
+        public bool ContinueAfterOutput = false;
         public IntCodeComputerState State = IntCodeComputerState.Idle;
         public IIntCodeComputerInput InputReader;
         public IIntCodeComputerOutput OutWriter;
 
-        public IntCodeComputer(List<int> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
+        public IntCodeComputer(List<long> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
         {
             OutWriter = outWriter;
             Code = code;
@@ -39,7 +40,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             try
             {
                 State = IntCodeComputerState.Running;
-                ExecuteOpCode();
+                while (State == IntCodeComputerState.Running)
+                {
+                    ExecuteOpCode();
+                }
             }
             catch (Exception e)
             {
@@ -60,35 +64,34 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             {
                 case InstructionModes.Addition:
                     Addition();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.Multiplication:
                     Multiplication();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.Input:
                     Input().Wait();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.Output:
                     Output();
-                    State = IntCodeComputerState.ProducedOutput;
+                    if (!ContinueAfterOutput)
+                    {
+                        State = IntCodeComputerState.ProducedOutput;
+                    }
                     break;
                 case InstructionModes.JumpIfTrue:
                     JumpIfTrue();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.JumpIfFalse:
                     JumpIfFalse();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.LessThan:
                     LessThan();
-                    ExecuteOpCode();
                     break;
                 case InstructionModes.Equals:
                     Equals();
-                    ExecuteOpCode();
+                    break;
+                case InstructionModes.RelativeBaseOffset:
+                    RelativeBaseOffset();
                     break;
                 case InstructionModes.Exit:
                     State = IntCodeComputerState.Finished;
@@ -104,7 +107,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         private void UpdateInstructionPointer()
         {
             var instructionPointer = _currentInstruction?.NextPointer ?? 0;
+            var relativeBase = _currentInstruction?.RelativeBase ?? 0;
+
             _currentInstruction = new Instruction(instructionPointer, Code);
+            _currentInstruction.RelativeBase = relativeBase;
         }
 
         /// <summary>
@@ -114,7 +120,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void Addition()
         {
-            RunFunction((int a, int b) => a + b);
+            RunFunction((long a, long b) => a + b);
         }
 
         /// <summary>
@@ -124,7 +130,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void Multiplication()
         {
-            RunFunction((int a, int b) => a * b);
+            RunFunction((long a, long b) => a * b);
         }
 
         /// <summary>
@@ -145,7 +151,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void Output()
         {
-            OutWriter.RaiseNewOutput(_currentInstruction.GetParameterValue(Code, 0));
+            OutWriter.RaiseNewOutput(_currentInstruction.GetParameterValue(ref Code, 0));
         }
 
         /// <summary>
@@ -153,10 +159,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void JumpIfTrue()
         {
-            var num1 = _currentInstruction.GetParameterValue(Code, 0);
+            var num1 = _currentInstruction.GetParameterValue(ref Code, 0);
             if (num1 != 0)
             {
-                _currentInstruction.NextPointer = _currentInstruction.GetParameterValue(Code, 1);
+                _currentInstruction.NextPointer = (int)_currentInstruction.GetParameterValue(ref Code, 1);
             }
         }
 
@@ -165,10 +171,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void JumpIfFalse()
         {
-            var num1 = _currentInstruction.GetParameterValue(Code, 0);
+            var num1 = _currentInstruction.GetParameterValue(ref Code, 0);
             if (num1 == 0)
             {
-                _currentInstruction.NextPointer = _currentInstruction.GetParameterValue(Code, 1);
+                _currentInstruction.NextPointer = (int)_currentInstruction.GetParameterValue(ref Code, 1);
             }
         }
 
@@ -177,8 +183,8 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void LessThan()
         {
-            var num1 = _currentInstruction.GetParameterValue(Code, 0);
-            var num2 = _currentInstruction.GetParameterValue(Code, 1);
+            var num1 = _currentInstruction.GetParameterValue(ref Code, 0);
+            var num2 = _currentInstruction.GetParameterValue(ref Code, 1);
 
             if (num1 < num2)
             {
@@ -195,8 +201,8 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         private void Equals()
         {
-            var num1 = _currentInstruction.GetParameterValue(Code, 0);
-            var num2 = _currentInstruction.GetParameterValue(Code, 1);
+            var num1 = _currentInstruction.GetParameterValue(ref Code, 0);
+            var num2 = _currentInstruction.GetParameterValue(ref Code, 1);
 
             if (num1 == num2)
             {
@@ -209,18 +215,26 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         }
 
         /// <summary>
+        /// Offsets the relative base of the int code computer
+        /// </summary>
+        private void RelativeBaseOffset()
+        {
+            var num1 = (int)_currentInstruction.GetParameterValue(ref Code, 0);
+            _currentInstruction.RelativeBase += num1;
+        }
+
+        /// <summary>
         /// Runs the defined function on the code
         /// </summary>
         /// <param name="delegateFunc"></param>
         /// <returns></returns>
-        private void RunFunction(Func<int, int, int> delegateFunc)
+        private void RunFunction(Func<long, long, long> delegateFunc)
         {
-            var num1 = _currentInstruction.GetParameterValue(Code, 0);
-            var num2 = _currentInstruction.GetParameterValue(Code, 1);
+            var num1 = _currentInstruction.GetParameterValue(ref Code, 0);
+            var num2 = _currentInstruction.GetParameterValue(ref Code, 1);
 
             _currentInstruction.SetValue(ref Code, 2, delegateFunc(num1, num2));
         }
-
     }
 
     /// <summary>

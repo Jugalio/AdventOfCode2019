@@ -8,11 +8,18 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 {
     public class PopupInput : BaseIntCodeComputerInput
     {
+        private string _labelText;
+
+        public PopupInput(string labelText)
+        {
+            _labelText = labelText;
+        }
+
         public override void GetInput()
         {
             var th = new Thread(() =>
             {
-                var input = new Input();
+                var input = new Input(_labelText);
                 input.ShowDialog();
                 if (input.OkClicked)
                 {

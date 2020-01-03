@@ -15,12 +15,12 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// Delegate for new outputs
         /// </summary>
         /// <param name="s"></param>
-        delegate void NewOutput(int s);
+        delegate void NewOutput(long s);
 
         /// <summary>
         /// Sents a new output event
         /// </summary>
         /// <param name="i"></param>
-        void RaiseNewOutput(int i);
+        void RaiseNewOutput(long i);
     }
 }

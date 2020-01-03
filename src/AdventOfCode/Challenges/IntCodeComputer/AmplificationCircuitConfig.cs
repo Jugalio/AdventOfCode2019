@@ -9,7 +9,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     public class AmplificationCircuitConfig
     {
         private List<int> _phaseSequence;
-        private IEnumerable<int> _code;
+        private IEnumerable<long> _code;
 
         /// <summary>
         /// Creates an amplification circuit program
@@ -17,7 +17,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// <param name="code"></param>
         /// <param name="phaseSequence"></param>
         /// <param name="outFunc"></param>
-        public AmplificationCircuitConfig(IEnumerable<int> code, IEnumerable<int> phaseSequence)
+        public AmplificationCircuitConfig(IEnumerable<long> code, IEnumerable<int> phaseSequence)
         {
             _phaseSequence = phaseSequence.ToList();
             _code = code;
@@ -26,14 +26,14 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// <summary>
         /// Configura all amplifiers and returns the output sent to the thruster
         /// </summary>
-        public int ConfigureAmplifiers(int startingInput)
+        public long ConfigureAmplifiers(int startingInput)
         {
-            int lastOutput = startingInput;
+            long lastOutput = startingInput;
 
             for (int i = 0; i < _phaseSequence.Count(); i++)
             {
                 var phaseSetting = _phaseSequence[i];
-                var io = new IntCodeComputerIO(new List<int>() { phaseSetting, lastOutput });
+                var io = new IntCodeComputerIO(new List<long>() { phaseSetting, lastOutput });
                 var comp = new IntCodeComputer(_code.ToList(), io, io);
 
                 comp.Compute();
@@ -48,11 +48,11 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// </summary>
         /// <param name="startingInput"></param>
         /// <returns></returns>
-        public int ConfigureAmplifiersFeedBackLoop(int startingInput)
+        public long ConfigureAmplifiersFeedBackLoop(int startingInput)
         {
             int lastOutput = startingInput;
             var range = Enumerable.Range(0, _phaseSequence.Count()).ToList();
-            var ios = _phaseSequence.Select(phaseSetting => new IntCodeComputerIO(new List<int>() { phaseSetting })).ToList();
+            var ios = _phaseSequence.Select(phaseSetting => new IntCodeComputerIO(new List<long>() { phaseSetting })).ToList();
 
             range.ForEach(i =>
             {
@@ -76,9 +76,12 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             });
 
             var intComps = range.Select(i => new IntCodeComputer(_code.ToList(), ios[i], ios[i])).ToList();
-            while(intComps.Last().State != IntCodeComputerState.Finished)
+            bool loop = true;
+
+            while (loop)
             {
                 intComps.ForEach(comp => comp.Compute());
+                loop = intComps.Last().State != IntCodeComputerState.Finished && intComps.Last().State != IntCodeComputerState.Failed;
             }
 
             return ios.Last().Outputs.Last();
@@ -86,7 +89,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 
         private void AddOutAsInput(IntCodeComputerIO fromAmplifier, IntCodeComputerIO toAmplifier)
         {
-            fromAmplifier.SentOutput += (int i) => toAmplifier.AddNewInput(i);
+            fromAmplifier.SentOutput += (long i) => toAmplifier.AddNewInput(i);
         }
 
     }

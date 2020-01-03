@@ -24,11 +24,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Label Content="An user input is required" 
-               Foreground="Green"
-               HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <TextBlock x:Name="label" 
+                   TextWrapping="WrapWithOverflow"
+                   Width="300"
+                   Foreground="Green"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-        <TextBox x:Name="txtBox" VerticalAlignment="Center" Background="White" Grid.Row="1" Text="{Binding InputString}" Width="300" />
+        <TextBox x:Name="txtBox" VerticalAlignment="Center" Background="White" Grid.Row="1" Width="300" />
 
         <Button Grid.Row="2" Content="OK" Click="Button_Click" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200"/>
     </Grid>

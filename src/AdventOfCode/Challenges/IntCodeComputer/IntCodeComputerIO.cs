@@ -7,11 +7,11 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 {
     public class IntCodeComputerIO : BaseIntCodeComputerInput, IIntCodeComputerOutput
     {
-        public List<int> Outputs;
+        public List<long> Outputs;
 
         public event IIntCodeComputerOutput.NewOutput SentOutput;
 
-        public void RaiseNewOutput(int i)
+        public void RaiseNewOutput(long i)
         {
             SentOutput?.Invoke(i);
         }
@@ -20,10 +20,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// Creates a new IO object with a list of inputs
         /// </summary>
         /// <param name="inputs"></param>
-        public IntCodeComputerIO(IEnumerable<int> inputs)
+        public IntCodeComputerIO(IEnumerable<long> inputs)
         {
-            Outputs = new List<int>();
-            SentOutput += (int i) => Outputs.Add(i);
+            Outputs = new List<long>();
+            SentOutput += (long i) => Outputs.Add(i);
 
             foreach (var input in inputs)
             {

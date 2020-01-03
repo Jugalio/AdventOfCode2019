@@ -2,9 +2,11 @@
 using AdventOfCode.Challenges.Day3;
 using AdventOfCode.Challenges.Day4;
 using AdventOfCode.Challenges.Day6;
+using AdventOfCode.Challenges.Day8;
 using AdventOfCode.Challenges.IntCodeComputer;
 using AdventOfCode.DataReader;
 using AdventOfCode.ViewModels.Console;
+using AdventOfCode.Views;
 using AdventOfCode.Views.Inputs;
 using Combinatorics;
 using MVVMSupport;
@@ -24,7 +26,6 @@ namespace AdventOfCode.ViewModels
     {
         private SynchronizationContext _sync;
         private DirectoryInfo _inputFolder;
-        private IIntCodeComputerInput _popupInput = new PopupInput();
         private IIntCodeComputerOutput _consoleOutput;
         public ObservableCollection<IShowOnConsole> ConsoleMessages { get; set; } = new ObservableCollection<IShowOnConsole>();
 
@@ -83,7 +84,7 @@ namespace AdventOfCode.ViewModels
             var assemblyRootFolder = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory;
             _inputFolder = new DirectoryInfo(Path.Combine(assemblyRootFolder.FullName, "InputData"));
 
-            _consoleOutput = new DelegateOutput((int i) => WriteToConsole(i.ToString()));
+            _consoleOutput = new DelegateOutput((long i) => WriteToConsole(i.ToString()));
             _sync = SynchronizationContext.Current;
         }
 
@@ -134,7 +135,8 @@ namespace AdventOfCode.ViewModels
             code[1] = 12;
             code[2] = 2;
 
-            var intComputer = new IntCodeComputer(code, _popupInput, _consoleOutput);
+            var input = new PopupInput("No input needed");
+            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
             intComputer.Compute();
             WriteToConsole($"After execution the value at position 0 is {intComputer.Code[0].ToString("N")}");
 
@@ -151,7 +153,7 @@ namespace AdventOfCode.ViewModels
                     var testCode = originalCode.ToList();
                     testCode[1] = noun;
                     testCode[2] = verb;
-                    intComputer = new IntCodeComputer(code, _popupInput, _consoleOutput);
+                    intComputer = new IntCodeComputer(code, input, _consoleOutput);
                     intComputer.Compute();
 
                     if (intComputer.Code[0] == 19690720)
@@ -247,7 +249,9 @@ namespace AdventOfCode.ViewModels
             var originalCode = parser.GetIntCode();
             var code = originalCode.ToList();
 
-            var intComputer = new IntCodeComputer(code, _popupInput, _consoleOutput);
+            var input = new PopupInput("Started Diagnostics. Inputs:\n1 - air conditioner unit\n5 - thermal radiator controller");
+            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
+            intComputer.ContinueAfterOutput = true;
             intComputer.Compute();
 
             WriteToConsole($"Diagnostics finished");
@@ -290,11 +294,11 @@ namespace AdventOfCode.ViewModels
 
             var combinatoric = new OrderedNoRepeat<int>(new List<int> { 0, 1, 2, 3, 4 });
             var combinations = combinatoric.GetCombinations(5).ToList();
-            var signalOutputs = combinations.Select(async phaseSettings =>
+            var signalOutputs = combinations.Select(phaseSettings =>
             {
                 var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
                 return ampli.ConfigureAmplifiers(0);
-            }).Select(t => t.Result).ToList();
+            }).ToList();
 
             var maxSignal = signalOutputs.Max();
             var index = signalOutputs.IndexOf(maxSignal);
@@ -306,11 +310,11 @@ namespace AdventOfCode.ViewModels
             WriteToConsole("Now we want to find the best pahse setting for a feedback loop configuration");
             combinatoric = new OrderedNoRepeat<int>(new List<int> { 5, 6, 7, 8, 9 });
             combinations = combinatoric.GetCombinations(5).ToList();
-            signalOutputs = combinations.Select(async phaseSettings =>
+            signalOutputs = combinations.Select(phaseSettings =>
             {
                 var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
                 return ampli.ConfigureAmplifiersFeedBackLoop(0);
-            }).Select(t => t.Result).ToList();
+            }).ToList();
 
             maxSignal = signalOutputs.Max();
             index = signalOutputs.IndexOf(maxSignal);
@@ -325,7 +329,34 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute8()
         {
+            WriteToConsole("Start execution of Day8");
+            var parser = GetInputParser("Day8Input.txt");
+            var data = parser.GetInputData();
+            var encodedImage = data.ToList()[0].ToCharArray().Select(c => int.Parse(c.ToString())).ToList();
 
+            var decoder = new SpaceImageFormatDecoder(25, 6, encodedImage);
+            decoder.Decode();
+
+            var zeroDigitsPerLayer = decoder.LayeredImage.Select(layer => layer.SelectMany(row => row.Where(d => d == 0)).Count()).ToList();
+            var fewestZeroDigits = zeroDigitsPerLayer.Min();
+            var index = zeroDigitsPerLayer.IndexOf(fewestZeroDigits);
+            var targetLayer = decoder.LayeredImage[index];
+
+            var ones = targetLayer.SelectMany(row => row.Where(d => d == 1)).Count();
+            var twos = targetLayer.SelectMany(row => row.Where(d => d == 2)).Count();
+            var checkSum = ones * twos;
+
+            WriteToConsole($"The layer with the least amount of zeros is layer {index + 1} and the checksum is {checkSum.ToString("N")}");
+
+            AddEmptyLine();
+
+            WriteToConsole($"Now we print the decoded image");
+            AddEmptyLine();
+
+            var dialog = new ImageDisplay(decoder.DecodedImage);
+            dialog.Show();
+
+            AddEmptyLine();
         }
 
         /// <summary>
@@ -333,7 +364,18 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute9()
         {
+            WriteToConsole("Start execution of Day9");
+            var parser = GetInputParser("Day9Input.txt");
+            var originalCode = parser.GetIntCode();
+            var code = originalCode.ToList();
 
+            var input = new PopupInput("Start BOOST. Inputs:\n1 - Test Mode\n2 - Sensor Boost Mode");
+            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
+            intComputer.Compute();
+
+            WriteToConsole($"Finished BOOST");
+
+            AddEmptyLine();
         }
 
         /// <summary>

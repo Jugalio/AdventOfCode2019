@@ -8,12 +8,12 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     {
         public event IIntCodeComputerOutput.NewOutput SentOutput;
 
-        public DelegateOutput(Action<int> output)
+        public DelegateOutput(Action<long> output)
         {
-            SentOutput += (int i) => output(i);
+            SentOutput += (long i) => output(i);
         }
 
-        public void RaiseNewOutput(int i)
+        public void RaiseNewOutput(long i)
         {
             SentOutput?.Invoke(i);
         }

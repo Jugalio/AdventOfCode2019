@@ -16,6 +16,6 @@ namespace AdventOfCode.DataReader
         /// Reads the textfile and parses the int code included in it
         /// </summary>
         /// <returns></returns>
-        IEnumerable<int> GetIntCode();
+        IEnumerable<long> GetIntCode();
     }
 }

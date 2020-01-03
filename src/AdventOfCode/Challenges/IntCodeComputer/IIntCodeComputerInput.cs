@@ -11,12 +11,12 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// Call to request an input
         /// </summary>
         /// <returns></returns>
-        Task<int> RequestInput();
+        Task<long> RequestInput();
 
         /// <summary>
         /// Adds a new input
         /// </summary>
         /// <param name="input"></param>
-        void AddNewInput(int input);
+        void AddNewInput(long input);
     }
 }

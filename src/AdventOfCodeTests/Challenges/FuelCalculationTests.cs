@@ -1,5 +1,4 @@
 ﻿using AdventOfCode.Challenges.Day1;
-using AdventOfCodeTests.Mocks;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

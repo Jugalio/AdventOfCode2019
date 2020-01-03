@@ -41,10 +41,10 @@ namespace AdventOfCode.DataReader
         /// Reads the textfile and parses the int code included in it
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<int> GetIntCode()
+        public IEnumerable<long> GetIntCode()
         {
             var lines = GetInputData();
-            var code = lines.SelectMany(line => line.Split(',')).Select(intValue => int.Parse(intValue));
+            var code = lines.SelectMany(line => line.Split(',')).Select(intValue => long.Parse(intValue));
             return code;
         }
     }
