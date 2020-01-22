@@ -44,9 +44,20 @@ namespace AdventOfCode.Views
                 {
                     var content = new Grid();
 
-                    if (decodedImage[i][j] == 0)
+                    switch (decodedImage[i][j])
                     {
-                        content.Background = Brushes.Black;
+                        case 0:
+                            content.Background = Brushes.Black;
+                            break;
+                        case 1:
+                            content.Background = Brushes.White;
+                            break;
+                        case 2:
+                            content.Background = Brushes.Red;
+                            break;
+                        case 3:
+                            content.Background = Brushes.Green;
+                            break;
                     }
 
                     Grid.SetRow(content, i);

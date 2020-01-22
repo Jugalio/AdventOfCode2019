@@ -34,7 +34,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             {
                 var phaseSetting = _phaseSequence[i];
                 var io = new IntCodeComputerIO(new List<long>() { phaseSetting, lastOutput });
-                var comp = new IntCodeComputer(_code.ToList(), io, io);
+                var comp = new IntCodeComputerInstance(_code.ToList(), io, io);
 
                 comp.Compute();
                 lastOutput = io.Outputs.Last();
@@ -75,7 +75,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
                 }
             });
 
-            var intComps = range.Select(i => new IntCodeComputer(_code.ToList(), ios[i], ios[i])).ToList();
+            var intComps = range.Select(i => new IntCodeComputerInstance(_code.ToList(), ios[i], ios[i])).ToList();
             bool loop = true;
 
             while (loop)

@@ -1,4 +1,11 @@
 ﻿using AdventOfCode.Challenges.Day1;
+using AdventOfCode.Challenges.Day10;
+using AdventOfCode.Challenges.Day11;
+using AdventOfCode.Challenges.Day12;
+using AdventOfCode.Challenges.Day13;
+using AdventOfCode.Challenges.Day14;
+using AdventOfCode.Challenges.Day15;
+using AdventOfCode.Challenges.Day16;
 using AdventOfCode.Challenges.Day3;
 using AdventOfCode.Challenges.Day4;
 using AdventOfCode.Challenges.Day6;
@@ -8,7 +15,8 @@ using AdventOfCode.DataReader;
 using AdventOfCode.ViewModels.Console;
 using AdventOfCode.Views;
 using AdventOfCode.Views.Inputs;
-using Combinatorics;
+using Extension.Mathematics.Combinatorics;
+using Extension.Mathematics.VectorSpace;
 using MVVMSupport;
 using System;
 using System.Collections.Generic;
@@ -136,7 +144,7 @@ namespace AdventOfCode.ViewModels
             code[2] = 2;
 
             var input = new PopupInput("No input needed");
-            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
+            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
             intComputer.Compute();
             WriteToConsole($"After execution the value at position 0 is {intComputer.Code[0].ToString("N")}");
 
@@ -153,7 +161,7 @@ namespace AdventOfCode.ViewModels
                     var testCode = originalCode.ToList();
                     testCode[1] = noun;
                     testCode[2] = verb;
-                    intComputer = new IntCodeComputer(code, input, _consoleOutput);
+                    intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
                     intComputer.Compute();
 
                     if (intComputer.Code[0] == 19690720)
@@ -250,7 +258,7 @@ namespace AdventOfCode.ViewModels
             var code = originalCode.ToList();
 
             var input = new PopupInput("Started Diagnostics. Inputs:\n1 - air conditioner unit\n5 - thermal radiator controller");
-            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
+            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
             intComputer.ContinueAfterOutput = true;
             intComputer.Compute();
 
@@ -288,40 +296,42 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute7()
         {
-            WriteToConsole("Start execution of Day7");
-            var parser = GetInputParser("Day7Input.txt");
-            var code = parser.GetIntCode();
-
-            var combinatoric = new OrderedNoRepeat<int>(new List<int> { 0, 1, 2, 3, 4 });
-            var combinations = combinatoric.GetCombinations(5).ToList();
-            var signalOutputs = combinations.Select(phaseSettings =>
+            Task.Run(() =>
             {
-                var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
-                return ampli.ConfigureAmplifiers(0);
-            }).ToList();
+                WriteToConsole("Start execution of Day7");
+                var parser = GetInputParser("Day7Input.txt");
+                var code = parser.GetIntCode();
 
-            var maxSignal = signalOutputs.Max();
-            var index = signalOutputs.IndexOf(maxSignal);
-            var phaseSettings = string.Join(", ", combinations[index]);
+                var permu = new PermutationNoRepetition(5, 5);
+                var combinations = permu.Get(new List<int> { 0, 1, 2, 3, 4 }).ToList();
+                var signalOutputs = combinations.Select(phaseSettings =>
+                {
+                    var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
+                    return ampli.ConfigureAmplifiers(0);
+                }).ToList();
 
-            WriteToConsole($"The best phase setting is {phaseSettings} with a signal output of {maxSignal.ToString("N")}");
-            AddEmptyLine();
+                var maxSignal = signalOutputs.Max();
+                var index = signalOutputs.IndexOf(maxSignal);
+                var phaseSettings = string.Join(", ", combinations[index]);
 
-            WriteToConsole("Now we want to find the best pahse setting for a feedback loop configuration");
-            combinatoric = new OrderedNoRepeat<int>(new List<int> { 5, 6, 7, 8, 9 });
-            combinations = combinatoric.GetCombinations(5).ToList();
-            signalOutputs = combinations.Select(phaseSettings =>
-            {
-                var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
-                return ampli.ConfigureAmplifiersFeedBackLoop(0);
-            }).ToList();
+                WriteToConsole($"The best phase setting is {phaseSettings} with a signal output of {maxSignal.ToString("N")}");
+                AddEmptyLine();
 
-            maxSignal = signalOutputs.Max();
-            index = signalOutputs.IndexOf(maxSignal);
-            phaseSettings = string.Join(", ", combinations[index]);
+                WriteToConsole("Now we want to find the best pahse setting for a feedback loop configuration");
+                combinations = permu.Get(new List<int> { 5, 6, 7, 8, 9 }).ToList();
+                signalOutputs = combinations.Select(phaseSettings =>
+                {
+                    var ampli = new AmplificationCircuitConfig(code.ToList(), phaseSettings);
+                    return ampli.ConfigureAmplifiersFeedBackLoop(0);
+                }).ToList();
 
-            WriteToConsole($"The best phase setting for a feedback loop configuration is {phaseSettings} with a signal output of {maxSignal.ToString("N")}");
-            AddEmptyLine();
+                maxSignal = signalOutputs.Max();
+                index = signalOutputs.IndexOf(maxSignal);
+                phaseSettings = string.Join(", ", combinations[index]);
+
+                WriteToConsole($"The best phase setting for a feedback loop configuration is {phaseSettings} with a signal output of {maxSignal.ToString("N")}");
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -370,7 +380,7 @@ namespace AdventOfCode.ViewModels
             var code = originalCode.ToList();
 
             var input = new PopupInput("Start BOOST. Inputs:\n1 - Test Mode\n2 - Sensor Boost Mode");
-            var intComputer = new IntCodeComputer(code, input, _consoleOutput);
+            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
             intComputer.Compute();
 
             WriteToConsole($"Finished BOOST");
@@ -383,7 +393,20 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute10()
         {
+            WriteToConsole("Start execution of Day10");
+            var parser = GetInputParser("Day10Input.txt");
+            var input = parser.GetInputData();
+            var map = input.Select(s => s.ToCharArray().ToList()).ToList();
 
+            var system = new AsteroidsMonitoringSystem(map);
+            var (position, score) = system.GetBestPosition();
+
+            WriteToConsole($"The best position for the monitoring system is ({position.X}, {position.Y}) with a score of {score}");
+
+            var sequence = system.GetVaporizationSequence(position);
+            var destroy = sequence[199];
+
+            WriteToConsole($"The asteroid which is destroy at position 200 is at ({destroy.X}, {destroy.Y})");
         }
 
         /// <summary>
@@ -391,7 +414,25 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute11()
         {
+            WriteToConsole("Start execution of Day11");
+            var parser = GetInputParser("Day11Input.txt");
+            var originalCode = parser.GetIntCode();
+            var code = originalCode.ToList();
 
+            var hullPaintingRobot = new HullPaintingRobot(code);
+            hullPaintingRobot.Paint(0);
+
+            WriteToConsole($"The hull paining robot has painted {hullPaintingRobot.PaintedPanels.Count} at least once");
+
+            WriteToConsole($"Now we start with a white panel instead of a black one.");
+
+            hullPaintingRobot = new HullPaintingRobot(code);
+            hullPaintingRobot.Paint(1);
+
+            var painting = hullPaintingRobot.GetPainting();
+
+            var dialog = new ImageDisplay(painting);
+            dialog.Show();
         }
 
         /// <summary>
@@ -399,7 +440,36 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute12()
         {
+            WriteToConsole("Start execution of Day12");
+            var IO = new IntVector(-3, 15, -11);
+            var Europa = new IntVector(3, 13, -19);
+            var Ganymede = new IntVector(-13, 18, -2);
+            var Callisto = new IntVector(6, 0, -1);
 
+            var system = new MoonMonitoringSystem(new List<IntVector>
+            {
+                IO,
+                Europa,
+                Ganymede,
+                Callisto,
+            });
+
+            system.Simulate(1000);
+            var energy = system.GetTotalEnegry();
+
+            WriteToConsole($"The total energy in the system after 1000 timesteps is {energy}");
+
+            system = new MoonMonitoringSystem(new List<IntVector>
+            {
+                IO,
+                Europa,
+                Ganymede,
+                Callisto,
+            });
+
+            var count = system.GetRepetitionCount();
+
+            WriteToConsole($"The moons return to their position after {count} time steps");
         }
 
         /// <summary>
@@ -407,7 +477,21 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute13()
         {
+            WriteToConsole("Start execution of Day13");
+            var parser = GetInputParser("Day13Input.txt");
+            var originalCode = parser.GetIntCode();
+            var code = originalCode.ToList();
 
+            var game = new ArcadeGame(code);
+            game.Start();
+            var blocks = game.Tiles.Where(t => t.Id == TileId.Block).Count();
+
+            WriteToConsole($"The number of blocks in the game is {blocks}");
+
+            game = new ArcadeGame(code);
+            game.PlayFree();
+
+            WriteToConsole($"The final score is {game.Score}");
         }
 
         /// <summary>
@@ -415,7 +499,19 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute14()
         {
+            WriteToConsole("Start execution of Day14");
+            var parser = GetInputParser("Day14Input.txt");
+            var reactions = parser.GetInputData();
 
+            var factory = new NanoFactory(reactions);
+            var raw = factory.GetRawMaterialFor(new ReactionTerm("FUEL", 1));
+            var ore = raw.FirstOrDefault(e => e.Element == "ORE");
+
+            WriteToConsole($"In order to produce one unit of FUEL {ore.Quantity} units ORE are needed");
+
+            var maxProduction = factory.GetProductionCapacity("FUEL", new ReactionTerm("ORE", 1000000000000));
+
+            WriteToConsole($"With 1000000000000 of ORE {maxProduction} units FUEL might be produced");
         }
 
         /// <summary>
@@ -423,7 +519,26 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute15()
         {
+            WriteToConsole("Start execution of Day15");
+            var parser = GetInputParser("Day15Input.txt");
+            var originalCode = parser.GetIntCode();
+            var code = originalCode.ToList();
 
+            var droid = new RepairDroid(code);
+            droid.Explore();
+
+            var route = droid.GetShortestRoute(new IntVector(0, 0), droid.OxygenSystem);
+
+            var map = droid.GetRouteMap(route);
+
+            var dialog = new ImageDisplay(map);
+            dialog.Show();
+
+            WriteToConsole($"The droid needed {route.Count - 1} movement commands to locate the oxygen system");
+
+            var time = droid.GetOxygenSpreadingTime(droid.OxygenSystem);
+
+            WriteToConsole($"It takes {time} minutes until the area is filled with oxygen");
         }
 
         /// <summary>
@@ -431,7 +546,22 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute16()
         {
+            WriteToConsole("Start execution of Day16");
+            var parser = GetInputParser("Day16Input.txt");
+            var data = parser.GetInputData();
 
+            var fft = new FFT(data.First());
+            fft.Run(100);
+
+            var first8 = fft.Signal.Substring(0, 8);
+
+            WriteToConsole($"The first 8 digits after 100 iteration are {first8}");
+
+            fft = new FFT(data.First());
+            fft.RepeatSignal(10_000);
+            fft.RunForMessage(100);
+
+            WriteToConsole($"The final message is {fft.Message}");
         }
 
         /// <summary>

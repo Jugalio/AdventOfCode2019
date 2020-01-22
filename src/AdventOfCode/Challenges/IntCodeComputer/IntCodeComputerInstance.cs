@@ -11,7 +11,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     /// A int code computer which is able to
     /// translate a list of integers and execute the opt codes in it
     /// </summary>
-    public class IntCodeComputer
+    public class IntCodeComputerInstance
     {
         private Instruction _currentInstruction;
         public List<long> Code;
@@ -20,7 +20,7 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         public IIntCodeComputerInput InputReader;
         public IIntCodeComputerOutput OutWriter;
 
-        public IntCodeComputer(List<long> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
+        public IntCodeComputerInstance(List<long> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
         {
             OutWriter = outWriter;
             Code = code;

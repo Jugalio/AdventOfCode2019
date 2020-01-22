@@ -7,6 +7,8 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 {
     public class IntCodeComputerIO : BaseIntCodeComputerInput, IIntCodeComputerOutput
     {
+        private Func<long> _getNextInput;
+
         public List<long> Outputs;
 
         public event IIntCodeComputerOutput.NewOutput SentOutput;
@@ -14,6 +16,17 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         public void RaiseNewOutput(long i)
         {
             SentOutput?.Invoke(i);
+        }
+
+        /// <summary>
+        /// Creates a new IO object with an action for requesting inputs
+        /// </summary>
+        /// <param name="inputs"></param>
+        public IntCodeComputerIO(Func<long> getNextInput)
+        {
+            Outputs = new List<long>();
+            SentOutput += (long i) => Outputs.Add(i);
+            _getNextInput = getNextInput;
         }
 
         /// <summary>
@@ -31,10 +44,20 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             }
         }
 
+        /// <summary>
+        /// Gets the next input and adds it to the list of inputs
+        /// </summary>
         public override void GetInput()
         {
-            //Their is no extra get input behaviore in this case
-            //This class juts waits for the next input added
+            if (_getNextInput != null)
+            {
+                var next = _getNextInput();
+                AddNewInput(next);
+            }
+            else
+            {
+                //Do nothing
+            }
         }
     }
 }

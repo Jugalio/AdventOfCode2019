@@ -143,7 +143,7 @@ namespace AdventOfCodeTests.Challenges
         public void Day2Test(List<long> code, List<long> outCode)
         {
             var io = new IntCodeComputerIO(new List<long>());
-            var intCodeComputer = new IntCodeComputer(code, io, io);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, io);
             intCodeComputer.Compute();
 
             Assert.IsTrue(intCodeComputer.Code.SequenceEqual(outCode));
@@ -154,7 +154,7 @@ namespace AdventOfCodeTests.Challenges
         {
             var io = new IntCodeComputerIO(new List<long>() { 1 });
 
-            var intCodeComputer = new IntCodeComputer(code, io, io);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, io);
             intCodeComputer.Compute();
 
             Assert.IsTrue(intCodeComputer.Code.SequenceEqual(outCode));
@@ -168,7 +168,7 @@ namespace AdventOfCodeTests.Challenges
             long output = default;
             var outputFunc = new DelegateOutput((long i) => output = i);
 
-            var intCodeComputer = new IntCodeComputer(code, io, outputFunc);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, outputFunc);
             intCodeComputer.Compute();
 
             Assert.IsTrue(output == expectedOutput);
@@ -200,7 +200,7 @@ namespace AdventOfCodeTests.Challenges
             var output = new List<long>();
             var outputFunc = new DelegateOutput((long i) => output.Add(i));
 
-            var intCodeComputer = new IntCodeComputer(code, io, outputFunc);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, outputFunc);
             intCodeComputer.ContinueAfterOutput = true;
             intCodeComputer.Compute();
 
@@ -216,7 +216,7 @@ namespace AdventOfCodeTests.Challenges
             long output = default;
             var outputFunc = new DelegateOutput((long i) => output = i);
 
-            var intCodeComputer = new IntCodeComputer(code, io, outputFunc);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, outputFunc);
             intCodeComputer.ContinueAfterOutput = true;
             intCodeComputer.Compute();
 
@@ -232,7 +232,7 @@ namespace AdventOfCodeTests.Challenges
             long output = default;
             var outputFunc = new DelegateOutput((long i) => output = i);
 
-            var intCodeComputer = new IntCodeComputer(code, io, outputFunc);
+            var intCodeComputer = new IntCodeComputerInstance(code, io, outputFunc);
             intCodeComputer.ContinueAfterOutput = true;
             intCodeComputer.Compute();
 

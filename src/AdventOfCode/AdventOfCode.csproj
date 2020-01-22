@@ -7,16 +7,34 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Extension.Mathematics" Version="1.2.12" />
     <PackageReference Include="morelinq" Version="3.3.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Combinatorics\Combinatorics.csproj" />
     <ProjectReference Include="..\ExtendedWpfControls\ExtendedWpfControls.csproj" />
     <ProjectReference Include="..\MVVMSupport\MVVMSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="InputData\Day10Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day11Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day13Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day14Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day15Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day16Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="InputData\Day1Input.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
