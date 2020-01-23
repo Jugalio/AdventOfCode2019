@@ -8,6 +8,12 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     public interface IIntCodeComputerInput
     {
         /// <summary>
+        /// Returns the number of inputs in the queque
+        /// </summary>
+        /// <returns></returns>
+        int NumberOfInputsInQueque();
+
+        /// <summary>
         /// Call to request an input
         /// </summary>
         /// <returns></returns>

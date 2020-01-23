@@ -634,10 +634,11 @@ namespace AdventOfCode.ViewModels
                 var checkSum = ascii.GetAlignmentParameters().Sum();
 
                 var map = ascii.GetScaffoldMap();
+                ImageDisplay dialog = null;
 
                 RunInUiThread(() =>
                 {
-                    var dialog = new ImageDisplay(map);
+                    dialog = new ImageDisplay(map);
                     dialog.SetText(ascii.VacuumRobot.X, ascii.VacuumRobot.Y, ascii.VacuumRobotStatus.ToString());
                     dialog.Show();
                 });
@@ -648,6 +649,19 @@ namespace AdventOfCode.ViewModels
                 var a = new List<char> { 'L', ',', '8', ',', 'L', ',', '6', ',', 'L', ',', '9', ',', '1', ',', 'L', ',', '6', '\n' };
                 var b = new List<char> { 'R', ',', '6', ',', 'L', ',', '8', ',', 'L', ',', '9', ',', '1', ',', 'R', ',', '6', '\n' };
                 var c = new List<char> { 'R', ',', '6', ',', 'L', ',', '6', ',', 'L', ',', '9', ',', '1', '\n' };
+
+
+                ascii.RobotMoved += (oldP, newP) =>
+                {
+                    RunInUiThread(() =>
+                    {
+                        dialog.SetText(oldP.X, oldP.Y, string.Empty);
+                        dialog.SetColor(oldP.X, oldP.Y, 1);
+
+                        dialog.SetText(newP.X, newP.Y, ascii.VacuumRobotStatus.ToString());
+                        dialog.SetColor(newP.X, newP.Y, 2);
+                    });
+                };
 
                 ascii.StartRobot(main, a, b, c, true);
 

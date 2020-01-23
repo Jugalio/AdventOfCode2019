@@ -13,17 +13,37 @@ namespace AdventOfCode.Challenges.Day17
     /// </summary>
     public class ASCII
     {
+        private bool readInputs = false;
         private int _currentRow;
         private int _currentColumn;
-        private int _maxTiles = int.MaxValue;
+        private int _maxRow = int.MaxValue;
+        private int _maxColumn = int.MaxValue;
         private IntCodeComputerInstance _computer;
         private IntCodeComputerIO _io;
         private List<IntVector> _scaffold = new List<IntVector>();
+        private List<char> _outputs = new List<char>();
 
         public long DustCollected;
-        public IntVector VacuumRobot;
+
+        private IntVector _vacuumRobot;
+        public IntVector VacuumRobot
+        {
+            get => _vacuumRobot;
+            set
+            {
+                if (value != _vacuumRobot)
+                {
+                    RobotMoved?.Invoke(_vacuumRobot, value);
+                    _vacuumRobot = value;
+                }
+            }
+        }
+
         public char VacuumRobotStatus;
         private char[] _allowed = new char[5] { '<', '>', '^', 'v', 'X' };
+
+        public event PositionChanged RobotMoved;
+        public delegate void PositionChanged(IntVector oldPosition, IntVector newPosition);
 
         /// <summary>
         /// New instance of the ascii system
@@ -32,7 +52,6 @@ namespace AdventOfCode.Challenges.Day17
         public ASCII(List<long> code)
         {
             _io = new IntCodeComputerIO(new List<long> { });
-            _io.SentOutput += _io_SentOutput;
             _computer = new IntCodeComputerInstance(code, _io, _io);
             _computer.ContinueAfterOutput = true;
         }
@@ -43,12 +62,15 @@ namespace AdventOfCode.Challenges.Day17
         public void Scan()
         {
             _computer.Reset();
+            _io.SentOutput += ScanOutputs;
             _scaffold = new List<IntVector>();
             _currentRow = 0;
             _currentColumn = 0;
             _computer.Compute();
 
-            _maxTiles = _currentColumn * _currentRow;
+            _io.SentOutput -= ScanOutputs;
+            _maxRow = _currentRow;
+            _maxColumn = _currentColumn;
         }
 
         /// <summary>
@@ -56,8 +78,18 @@ namespace AdventOfCode.Challenges.Day17
         /// </summary>
         public void StartRobot(List<char> mainRoutine, List<char> a, List<char> b, List<char> c, bool videoFeed)
         {
-            //_computer.Reset();
+            //If the video feed is active we have to change the mode in which the output is 
+            //reported 
+            if (videoFeed)
+            {
+                _io.SentOutput += VideoFeed;
+            }
+
+            readInputs = true;
+            _computer.Reset();
             _computer.Code[0] = 2;
+            _currentRow = 0;
+            _currentColumn = 0;
 
             mainRoutine.AddRange(a);
             mainRoutine.AddRange(b);
@@ -68,6 +100,11 @@ namespace AdventOfCode.Challenges.Day17
             mainRoutine.Select(c => (int)c).ToList().ForEach(v => _io.AddNewInput(v));
 
             _computer.Compute();
+
+            if (videoFeed)
+            {
+                _io.SentOutput -= VideoFeed;
+            }
         }
 
         /// <summary>
@@ -137,57 +174,93 @@ namespace AdventOfCode.Challenges.Day17
         /// A new scan from the cameras comes through
         /// </summary>
         /// <param name="s"></param>
-        private void _io_SentOutput(long s)
+        private void ScanOutputs(long s)
         {
+            //Values outside of ascii are dust collection status reports
             if (s > 127)
             {
                 DustCollected = s;
             }
-                
-            var output = (char)s;
-            switch (output)
+            else
             {
-                case '.':
-                    _currentColumn++;
-                    break;
-                case '\n':
-                    _currentColumn = 0;
-                    _currentRow++;
-                    break;
-                case '#':
-                    _scaffold.Add(new IntVector(_currentColumn, _currentRow));
-                    _currentColumn++;
-                    break;
-                default:
-                    AddVacuumRobot(new IntVector(_currentColumn, _currentRow), output);
-                    break;
-            }
-
-            if(_currentRow * _currentColumn >= _maxTiles)
-            {
-                _currentRow = 0;
-                _currentColumn = 0;
+                var output = (char)s;
+                switch (output)
+                {
+                    case '.':
+                        _currentColumn++;
+                        break;
+                    case '\n':
+                        _currentColumn = 0;
+                        _currentRow++;
+                        break;
+                    case '#':
+                        _scaffold.Add(new IntVector(_currentColumn, _currentRow));
+                        _currentColumn++;
+                        break;
+                    case char c when _allowed.Contains(c):
+                        var v = new IntVector(_currentColumn, _currentRow);
+                        _scaffold.Add(v);
+                        VacuumRobotStatus = c;
+                        VacuumRobot = v;
+                        _currentColumn++;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
-        private void AddVacuumRobot(IntVector position, char status)
+        /// <summary>
+        /// A new scan from the cameras comes through
+        /// </summary>
+        /// <param name="s"></param>
+        private void VideoFeed(long s)
         {
-            if (!_allowed.Contains(status))
+            if (readInputs)
             {
-                //Do nothing
+                if (_io.NumberOfInputsInQueque() == 0)
+                {
+                    readInputs = false;
+                }
+                return;
+            }
+
+            if (_currentRow == _maxRow && _currentColumn == _maxColumn)
+            {
+                _currentColumn = 0;
+                _currentRow = 0;
+            }
+
+            //Values outside of ascii are dust collection status reports
+            if (s > 127)
+            {
+                DustCollected = s;
             }
             else
             {
-                AddScaffold(position);
-                VacuumRobot = position;
-                VacuumRobotStatus = status;
+                var output = (char)s;
+                switch (output)
+                {
+                    case '.':
+                        _currentColumn++;
+                        break;
+                    case '\n':
+                        _currentColumn = 0;
+                        _currentRow++;
+                        break;
+                    case '#':
+                        _currentColumn++;
+                        break;
+                    case char c when _allowed.Contains(c):
+                        var v = new IntVector(_currentColumn, _currentRow);
+                        VacuumRobotStatus = c;
+                        VacuumRobot = v;
+                        _currentColumn++;
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
-
-        private void AddScaffold(IntVector position)
-        {
-            _scaffold.Add(position);
-            _currentColumn++;
         }
     }
 }

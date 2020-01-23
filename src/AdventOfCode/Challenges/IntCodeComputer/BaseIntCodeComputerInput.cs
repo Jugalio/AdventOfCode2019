@@ -67,5 +67,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
 
             return input;
         }
+
+        public int NumberOfInputsInQueque()
+        {
+            return Inputs.Count;
+        }
     }
 }

@@ -40,35 +40,20 @@ namespace AdventOfCode.Views
                 ImageGrid.ColumnDefinitions.Add(column);
             }
 
-            for(int i = 0; i< rowCount; i++)
+            for (int i = 0; i < rowCount; i++)
             {
                 _contents.Add(new List<TextBox>());
 
-                for (int j = 0; j< columnCount; j++)
+                for (int j = 0; j < columnCount; j++)
                 {
                     var content = new TextBox();
                     content.VerticalContentAlignment = VerticalAlignment.Center;
                     content.HorizontalContentAlignment = HorizontalAlignment.Center;
 
-                    switch (decodedImage[i][j])
-                    {
-                        case 0:
-                            content.Background = Brushes.Black;
-                            content.Foreground = Brushes.White;
-                            break;
-                        case 1:
-                            content.Background = Brushes.White;
-                            content.Foreground = Brushes.Black;
-                            break;
-                        case 2:
-                            content.Background = Brushes.Red;
-                            content.Foreground = Brushes.Black;
-                            break;
-                        case 3:
-                            content.Background = Brushes.Green;
-                            content.Foreground = Brushes.Red;
-                            break;
-                    }
+                    var (b, f) = GetColor(decodedImage[i][j]);
+
+                    content.Background = b;
+                    content.Foreground = f;
 
                     _contents[i].Add(content);
 
@@ -89,6 +74,33 @@ namespace AdventOfCode.Views
         public void SetText(int x, int y, string text)
         {
             _contents[y][x].Text = text;
+        }
+
+        /// <summary>
+        /// Sets the color of one of the tiles
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="colorCode"></param>
+        public void SetColor(int x, int y, int colorCode)
+        {
+            var (b, f) = GetColor(colorCode);
+
+            _contents[y][x].Background = b;
+            _contents[y][x].Foreground = f;
+
+        }
+
+        private (Brush backGround, Brush foreGround) GetColor(int colorCode)
+        {
+            return colorCode switch
+            {
+                0 => (Brushes.Black, Brushes.White),
+                1 => (Brushes.White, Brushes.Black),
+                2 => (Brushes.Red, Brushes.Black),
+                3 => (Brushes.Green, Brushes.Red),
+                _ => (Brushes.Black, Brushes.White),
+            };
         }
     }
 }
