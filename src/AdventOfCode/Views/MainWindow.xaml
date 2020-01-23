@@ -5,15 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AdventOfCode.Views"
         xmlns:console="clr-namespace:AdventOfCode.Views.Console"
-        xmlns:viewmodel="clr-namespace:AdventOfCode.ViewModels"
-        xmlns:controls="clr-namespace:ExtendedWpfControls;assembly=ExtendedWpfControls"
         mc:Ignorable="d"
         Title="Advent of Code 2019" Height="450" Width="800">
-
-    <Window.DataContext>
-        <viewmodel:MainWindowViewModel/>
-    </Window.DataContext>
-
+    
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="Background" Value="Black"/>

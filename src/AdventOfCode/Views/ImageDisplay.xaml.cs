@@ -17,6 +17,8 @@ namespace AdventOfCode.Views
     /// </summary>
     public partial class ImageDisplay : Window
     {
+        private List<List<TextBox>> _contents = new List<List<TextBox>>();
+
         public ImageDisplay(List<List<int>> decodedImage)
         {
             InitializeComponent();
@@ -40,25 +42,35 @@ namespace AdventOfCode.Views
 
             for(int i = 0; i< rowCount; i++)
             {
+                _contents.Add(new List<TextBox>());
+
                 for (int j = 0; j< columnCount; j++)
                 {
-                    var content = new Grid();
+                    var content = new TextBox();
+                    content.VerticalContentAlignment = VerticalAlignment.Center;
+                    content.HorizontalContentAlignment = HorizontalAlignment.Center;
 
                     switch (decodedImage[i][j])
                     {
                         case 0:
                             content.Background = Brushes.Black;
+                            content.Foreground = Brushes.White;
                             break;
                         case 1:
                             content.Background = Brushes.White;
+                            content.Foreground = Brushes.Black;
                             break;
                         case 2:
                             content.Background = Brushes.Red;
+                            content.Foreground = Brushes.Black;
                             break;
                         case 3:
                             content.Background = Brushes.Green;
+                            content.Foreground = Brushes.Red;
                             break;
                     }
+
+                    _contents[i].Add(content);
 
                     Grid.SetRow(content, i);
                     Grid.SetColumn(content, j);
@@ -67,6 +79,16 @@ namespace AdventOfCode.Views
             }
 
             Content = ImageGrid;
+        }
+
+        /// <summary>
+        /// Sets the text in a specific tile
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void SetText(int x, int y, string text)
+        {
+            _contents[y][x].Text = text;
         }
     }
 }

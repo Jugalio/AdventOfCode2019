@@ -1,6 +1,7 @@
 ﻿using AdventOfCode.Views.Inputs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,9 @@ namespace AdventOfCode.Challenges.IntCodeComputer
     /// </summary>
     public class IntCodeComputerInstance
     {
+        private long _operations = 0;
+        private IEnumerable<long> _originalCode;
+
         private Instruction _currentInstruction;
         public List<long> Code;
         public bool ContinueAfterOutput = false;
@@ -20,10 +24,11 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         public IIntCodeComputerInput InputReader;
         public IIntCodeComputerOutput OutWriter;
 
-        public IntCodeComputerInstance(List<long> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
+        public IntCodeComputerInstance(IEnumerable<long> code, IIntCodeComputerInput inputReader, IIntCodeComputerOutput outWriter)
         {
             OutWriter = outWriter;
-            Code = code;
+            Code = code.ToList();
+            _originalCode = code;
             InputReader = inputReader;
         }
 
@@ -32,8 +37,6 @@ namespace AdventOfCode.Challenges.IntCodeComputer
         /// method for that code. With the new code this function is called again,
         /// until the opCode 99 is hit
         /// </summary>
-        /// <param name="instructionPointer"></param>
-        /// <param name="code"></param>
         /// <returns></returns>
         public void Compute()
         {
@@ -47,9 +50,22 @@ namespace AdventOfCode.Challenges.IntCodeComputer
             }
             catch (Exception e)
             {
-                //Exception during the execution of the int code computer
                 State = IntCodeComputerState.Failed;
+                throw e;
             }
+        }
+
+        /// <summary>
+        /// Resets the int code computer to its starting status
+        /// </summary>
+        public void Reset()
+        {
+            State = IntCodeComputerState.Idle;
+            Code = _originalCode.ToList();
+
+            _currentInstruction = null;
+
+            _operations = 0;
         }
 
         /// <summary>
@@ -97,8 +113,10 @@ namespace AdventOfCode.Challenges.IntCodeComputer
                     State = IntCodeComputerState.Finished;
                     break;
                 default:
-                    throw new Exception($"OpCode {_currentInstruction.OpCode} unkonwn");
+                    throw new ArgumentException($"OpCode {_currentInstruction.OpCode} unkonwn");
             }
+
+            _operations++;
         }
 
         /// <summary>

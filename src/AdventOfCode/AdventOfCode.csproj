@@ -8,12 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="Extension.Mathematics" Version="1.2.12" />
+    <PackageReference Include="Extension.Wpf" Version="0.0.7" />
     <PackageReference Include="morelinq" Version="3.3.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ExtendedWpfControls\ExtendedWpfControls.csproj" />
-    <ProjectReference Include="..\MVVMSupport\MVVMSupport.csproj" />
+    <PackageReference Include="NLog" Version="4.6.8" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +31,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="InputData\Day16Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="InputData\Day17Input.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="InputData\Day1Input.txt">
@@ -60,6 +61,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="InputData\Day9Input.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="nlog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewmodel="clr-namespace:AdventOfCode.ViewModels.Console"
-             xmlns:controls="clr-namespace:ExtendedWpfControls;assembly=ExtendedWpfControls"
+             xmlns:controls="clr-namespace:Extension.Wpf.UserControlExtensions;assembly=Extension.Wpf"
              xmlns:local="clr-namespace:AdventOfCode.Views.Console"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">

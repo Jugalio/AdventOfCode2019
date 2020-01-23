@@ -1,11 +1,11 @@
-﻿using MVVMSupport;
+﻿using Extension.Wpf.MVVM;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace AdventOfCode.ViewModels.Console
 {
-    public class ConsoleMessage: ViewModelBase, IShowOnConsole
+    public class ConsoleMessage: SimpleViewModelBase, IShowOnConsole
     {
         public string Message { get; set; }
 

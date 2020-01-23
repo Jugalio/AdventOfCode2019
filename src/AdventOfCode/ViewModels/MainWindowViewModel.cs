@@ -6,6 +6,7 @@ using AdventOfCode.Challenges.Day13;
 using AdventOfCode.Challenges.Day14;
 using AdventOfCode.Challenges.Day15;
 using AdventOfCode.Challenges.Day16;
+using AdventOfCode.Challenges.Day17;
 using AdventOfCode.Challenges.Day3;
 using AdventOfCode.Challenges.Day4;
 using AdventOfCode.Challenges.Day6;
@@ -17,7 +18,9 @@ using AdventOfCode.Views;
 using AdventOfCode.Views.Inputs;
 using Extension.Mathematics.Combinatorics;
 using Extension.Mathematics.VectorSpace;
-using MVVMSupport;
+using Extension.Wpf.Dialogs;
+using Extension.Wpf.MVVM;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +35,6 @@ namespace AdventOfCode.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private SynchronizationContext _sync;
         private DirectoryInfo _inputFolder;
         private IIntCodeComputerOutput _consoleOutput;
         public ObservableCollection<IShowOnConsole> ConsoleMessages { get; set; } = new ObservableCollection<IShowOnConsole>();
@@ -62,7 +64,7 @@ namespace AdventOfCode.ViewModels
         public RelayCommand Day23Command { get; set; }
         public RelayCommand Day24Command { get; set; }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(ILogger<MainWindowViewModel> logger, IDialogService dialogs) : base(logger, dialogs)
         {
             Day1Command = new RelayCommand(Execute1);
             Day2Command = new RelayCommand(Execute2);
@@ -93,7 +95,6 @@ namespace AdventOfCode.ViewModels
             _inputFolder = new DirectoryInfo(Path.Combine(assemblyRootFolder.FullName, "InputData"));
 
             _consoleOutput = new DelegateOutput((long i) => WriteToConsole(i.ToString()));
-            _sync = SynchronizationContext.Current;
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace AdventOfCode.ViewModels
         /// <param name="txt"></param>
         public void WriteToConsole(string txt)
         {
-            _sync.Post((o) => ConsoleMessages.Add(new ConsoleMessage(txt)), null);
+            RunInUiThread(() => ConsoleMessages.Add(new ConsoleMessage(txt)));
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void AddEmptyLine()
         {
-            _sync.Post((o) => ConsoleMessages.Add(new ConsoleMessage(null)), null);
+            RunInUiThread(() => ConsoleMessages.Add(new ConsoleMessage(null)));
         }
 
         /// <summary>
@@ -119,15 +120,18 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute1()
         {
-            WriteToConsole("Start execution of Day1");
-            var parser = GetInputParser("Day1Input.txt");
-            var masses = parser.GetInputData().Select(m => double.Parse(m));
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day1");
+                var parser = GetInputParser("Day1Input.txt");
+                var masses = parser.GetInputData().Select(m => double.Parse(m));
 
-            var fuelCalc = new FuelCalculation();
-            var fuel = fuelCalc.CalculateFuel(masses);
-            WriteToConsole($"For the given modules {fuel.ToString("N")} fuel is required");
+                var fuelCalc = new FuelCalculation();
+                var fuel = fuelCalc.CalculateFuel(masses);
+                WriteToConsole($"For the given modules {fuel.ToString("N")} fuel is required");
 
-            AddEmptyLine();
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -135,49 +139,52 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute2()
         {
-            WriteToConsole("Start execution of Day2");
-            var parser = GetInputParser("Day2Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
-
-            code[1] = 12;
-            code[2] = 2;
-
-            var input = new PopupInput("No input needed");
-            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
-            intComputer.Compute();
-            WriteToConsole($"After execution the value at position 0 is {intComputer.Code[0].ToString("N")}");
-
-            AddEmptyLine();
-
-            WriteToConsole("For part 2 we need to find the inputs that produce the output 19690720");
-            int finalNoun = -1;
-            int finalVerb = -1;
-
-            for (int noun = 0; noun <= 99; noun++)
+            UserActionAsync(() =>
             {
-                for (int verb = 0; verb <= 99; verb++)
-                {
-                    var testCode = originalCode.ToList();
-                    testCode[1] = noun;
-                    testCode[2] = verb;
-                    intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
-                    intComputer.Compute();
+                WriteToConsole("Start execution of Day2");
+                var parser = GetInputParser("Day2Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-                    if (intComputer.Code[0] == 19690720)
+                code[1] = 12;
+                code[2] = 2;
+
+                var input = new PopupInput("No input needed");
+                var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
+                intComputer.Compute();
+                WriteToConsole($"After execution the value at position 0 is {intComputer.Code[0].ToString("N")}");
+
+                AddEmptyLine();
+
+                WriteToConsole("For part 2 we need to find the inputs that produce the output 19690720");
+                int finalNoun = -1;
+                int finalVerb = -1;
+
+                for (int noun = 0; noun <= 99; noun++)
+                {
+                    for (int verb = 0; verb <= 99; verb++)
                     {
-                        finalNoun = noun;
-                        finalVerb = verb;
-                        //Breaks the outer loop
-                        noun = 100;
-                        break;
+                        var testCode = originalCode.ToList();
+                        testCode[1] = noun;
+                        testCode[2] = verb;
+                        intComputer = new IntCodeComputerInstance(testCode, input, _consoleOutput);
+                        intComputer.Compute();
+
+                        if (intComputer.Code[0] == 19690720)
+                        {
+                            finalNoun = noun;
+                            finalVerb = verb;
+                            //Breaks the outer loop
+                            noun = 100;
+                            break;
+                        }
                     }
                 }
-            }
 
-            WriteToConsole($"Found the correct inputs: Noun = {finalNoun}, Verb = {finalVerb}. 100 * Noun + verb = {100 * finalNoun + finalVerb}");
+                WriteToConsole($"Found the correct inputs: Noun = {finalNoun}, Verb = {finalVerb}. 100 * Noun + verb = {100 * finalNoun + finalVerb}");
 
-            AddEmptyLine();
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -185,30 +192,33 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute3()
         {
-            WriteToConsole("Start execution of Day3");
-            var parser = GetInputParser("Day3Input.txt");
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day3");
+                var parser = GetInputParser("Day3Input.txt");
 
-            var startingPoint = new CoordinatePoint(0, 0);
-            var wires = parser.GetInputData().Select(line => new Wire(startingPoint, line.Split(','))).ToList();
+                var startingPoint = new CoordinatePoint(0, 0);
+                var wires = parser.GetInputData().Select(line => new Wire(startingPoint, line.Split(','))).ToList();
 
-            var wire1 = wires[0];
-            var wire2 = wires[1];
+                var wire1 = wires[0];
+                var wire2 = wires[1];
 
-            var intersections = wire1.GetIntersectionsWith(wire2);
-            var board = new GridBoard();
-            var closestPoint = board.GetClosestPointTo(intersections, startingPoint);
+                var intersections = wire1.GetIntersectionsWith(wire2);
+                var board = new GridBoard();
+                var closestPoint = board.GetClosestPointTo(intersections, startingPoint);
 
-            WriteToConsole($"The closest intersection point is located at {closestPoint.point} with a distance to the starting point of {closestPoint.distance}");
+                WriteToConsole($"The closest intersection point is located at {closestPoint.point} with a distance to the starting point of {closestPoint.distance}");
 
-            AddEmptyLine();
+                AddEmptyLine();
 
-            WriteToConsole($"Now we want to find the closest intersection based on the steps both wires combined have to take to reach it");
+                WriteToConsole($"Now we want to find the closest intersection based on the steps both wires combined have to take to reach it");
 
-            var firstIntersection = wire1.GetFirstIntersectionWith(wire2);
+                var firstIntersection = wire1.GetFirstIntersectionWith(wire2);
 
-            WriteToConsole($"The first intersection point is located at {firstIntersection.point} with a total number of {firstIntersection.steps} steps");
+                WriteToConsole($"The first intersection point is located at {firstIntersection.point} with a total number of {firstIntersection.steps} steps");
 
-            AddEmptyLine();
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -216,35 +226,38 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute4()
         {
-            WriteToConsole("Start execution of Day4");
-            var parser = GetInputParser("Day4Input.txt");
-
-            var stringRange = parser.GetInputData().First().Split('-');
-
-            var start = int.Parse(stringRange[0]);
-            var end = int.Parse(stringRange[1]);
-
-            var range = Enumerable.Range(start, end - start);
-
-            var candidates1 = range.Where(i =>
+            UserActionAsync(() =>
             {
-                return CriteriaFunctions.AdjacentEqual(i.ToString()) &&
-                CriteriaFunctions.NeverDecreasing(i.ToString());
+                WriteToConsole("Start execution of Day4");
+                var parser = GetInputParser("Day4Input.txt");
+
+                var stringRange = parser.GetInputData().First().Split('-');
+
+                var start = int.Parse(stringRange[0]);
+                var end = int.Parse(stringRange[1]);
+
+                var range = Enumerable.Range(start, end - start);
+
+                var candidates1 = range.Where(i =>
+                {
+                    return CriteriaFunctions.AdjacentEqual(i.ToString()) &&
+                    CriteriaFunctions.NeverDecreasing(i.ToString());
+                });
+
+                WriteToConsole($"Found {candidates1.Count()} possible passwords, that satisfy the first set of criteria functions");
+
+                AddEmptyLine();
+
+                var candidates2 = range.Where(i =>
+                {
+                    return CriteriaFunctions.AdjacentEqualNoGroup(i.ToString()) &&
+                    CriteriaFunctions.NeverDecreasing(i.ToString());
+                });
+
+                WriteToConsole($"Found {candidates2.Count()} possible passwords, that satisfy the second set of criteria functions");
+
+                AddEmptyLine();
             });
-
-            WriteToConsole($"Found {candidates1.Count()} possible passwords, that satisfy the first set of criteria functions");
-
-            AddEmptyLine();
-
-            var candidates2 = range.Where(i =>
-            {
-                return CriteriaFunctions.AdjacentEqualNoGroup(i.ToString()) &&
-                CriteriaFunctions.NeverDecreasing(i.ToString());
-            });
-
-            WriteToConsole($"Found {candidates2.Count()} possible passwords, that satisfy the second set of criteria functions");
-
-            AddEmptyLine();
         }
 
         /// <summary>
@@ -252,19 +265,22 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute5()
         {
-            WriteToConsole("Start execution of Day5");
-            var parser = GetInputParser("Day5Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day5");
+                var parser = GetInputParser("Day5Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-            var input = new PopupInput("Started Diagnostics. Inputs:\n1 - air conditioner unit\n5 - thermal radiator controller");
-            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
-            intComputer.ContinueAfterOutput = true;
-            intComputer.Compute();
+                var input = new PopupInput("Started Diagnostics. Inputs:\n1 - air conditioner unit\n5 - thermal radiator controller");
+                var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
+                intComputer.ContinueAfterOutput = true;
+                intComputer.Compute();
 
-            WriteToConsole($"Diagnostics finished");
+                WriteToConsole($"Diagnostics finished");
 
-            AddEmptyLine();
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -272,23 +288,26 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute6()
         {
-            WriteToConsole("Start execution of Day6");
-            var parser = GetInputParser("Day6Input.txt");
-            var input = parser.GetInputData();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day6");
+                var parser = GetInputParser("Day6Input.txt");
+                var input = parser.GetInputData();
 
-            var map = new OrbitMap(input);
-            var orbits = map.GetNumberOfOrbits();
+                var map = new OrbitMap(input);
+                var orbits = map.GetNumberOfOrbits();
 
-            WriteToConsole($"The given map has {orbits.ToString("N")} orbits");
-            AddEmptyLine();
+                WriteToConsole($"The given map has {orbits.ToString("N")} orbits");
+                AddEmptyLine();
 
-            WriteToConsole($"Now we want to find the shortest orbital transfer from YOU to SAN");
+                WriteToConsole($"Now we want to find the shortest orbital transfer from YOU to SAN");
 
-            var you = map.SpaceObjects.FirstOrDefault(o => o.Id == "YOU");
-            var san = map.SpaceObjects.FirstOrDefault(o => o.Id == "SAN");
-            var (distance, path) = you.GetTransfersToReach(san);
+                var you = map.SpaceObjects.FirstOrDefault(o => o.Id == "YOU");
+                var san = map.SpaceObjects.FirstOrDefault(o => o.Id == "SAN");
+                var (distance, path) = you.GetTransfersToReach(san);
 
-            WriteToConsole($"The shortest transfer from YOU to SAN takes {distance} transfers with the route {path}");
+                WriteToConsole($"The shortest transfer from YOU to SAN takes {distance} transfers with the route {path}");
+            });
         }
 
         /// <summary>
@@ -296,7 +315,7 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute7()
         {
-            Task.Run(() =>
+            UserActionAsync(() =>
             {
                 WriteToConsole("Start execution of Day7");
                 var parser = GetInputParser("Day7Input.txt");
@@ -339,34 +358,38 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute8()
         {
-            WriteToConsole("Start execution of Day8");
-            var parser = GetInputParser("Day8Input.txt");
-            var data = parser.GetInputData();
-            var encodedImage = data.ToList()[0].ToCharArray().Select(c => int.Parse(c.ToString())).ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day8");
+                var parser = GetInputParser("Day8Input.txt");
+                var data = parser.GetInputData();
+                var encodedImage = data.ToList()[0].ToCharArray().Select(c => int.Parse(c.ToString())).ToList();
 
-            var decoder = new SpaceImageFormatDecoder(25, 6, encodedImage);
-            decoder.Decode();
+                var decoder = new SpaceImageFormatDecoder(25, 6, encodedImage);
+                decoder.Decode();
 
-            var zeroDigitsPerLayer = decoder.LayeredImage.Select(layer => layer.SelectMany(row => row.Where(d => d == 0)).Count()).ToList();
-            var fewestZeroDigits = zeroDigitsPerLayer.Min();
-            var index = zeroDigitsPerLayer.IndexOf(fewestZeroDigits);
-            var targetLayer = decoder.LayeredImage[index];
+                var zeroDigitsPerLayer = decoder.LayeredImage.Select(layer => layer.SelectMany(row => row.Where(d => d == 0)).Count()).ToList();
+                var fewestZeroDigits = zeroDigitsPerLayer.Min();
+                var index = zeroDigitsPerLayer.IndexOf(fewestZeroDigits);
+                var targetLayer = decoder.LayeredImage[index];
 
-            var ones = targetLayer.SelectMany(row => row.Where(d => d == 1)).Count();
-            var twos = targetLayer.SelectMany(row => row.Where(d => d == 2)).Count();
-            var checkSum = ones * twos;
+                var ones = targetLayer.SelectMany(row => row.Where(d => d == 1)).Count();
+                var twos = targetLayer.SelectMany(row => row.Where(d => d == 2)).Count();
+                var checkSum = ones * twos;
 
-            WriteToConsole($"The layer with the least amount of zeros is layer {index + 1} and the checksum is {checkSum.ToString("N")}");
+                WriteToConsole($"The layer with the least amount of zeros is layer {index + 1} and the checksum is {checkSum.ToString("N")}");
 
-            AddEmptyLine();
+                AddEmptyLine();
 
-            WriteToConsole($"Now we print the decoded image");
-            AddEmptyLine();
+                WriteToConsole($"Now we print the decoded image");
+                AddEmptyLine();
 
-            var dialog = new ImageDisplay(decoder.DecodedImage);
-            dialog.Show();
-
-            AddEmptyLine();
+                RunInUiThread(() =>
+                {
+                    var dialog = new ImageDisplay(decoder.DecodedImage);
+                    dialog.Show();
+                });
+            });
         }
 
         /// <summary>
@@ -374,18 +397,21 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute9()
         {
-            WriteToConsole("Start execution of Day9");
-            var parser = GetInputParser("Day9Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day9");
+                var parser = GetInputParser("Day9Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-            var input = new PopupInput("Start BOOST. Inputs:\n1 - Test Mode\n2 - Sensor Boost Mode");
-            var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
-            intComputer.Compute();
+                var input = new PopupInput("Start BOOST. Inputs:\n1 - Test Mode\n2 - Sensor Boost Mode");
+                var intComputer = new IntCodeComputerInstance(code, input, _consoleOutput);
+                intComputer.Compute();
 
-            WriteToConsole($"Finished BOOST");
+                WriteToConsole($"Finished BOOST");
 
-            AddEmptyLine();
+                AddEmptyLine();
+            });
         }
 
         /// <summary>
@@ -393,20 +419,23 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute10()
         {
-            WriteToConsole("Start execution of Day10");
-            var parser = GetInputParser("Day10Input.txt");
-            var input = parser.GetInputData();
-            var map = input.Select(s => s.ToCharArray().ToList()).ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day10");
+                var parser = GetInputParser("Day10Input.txt");
+                var input = parser.GetInputData();
+                var map = input.Select(s => s.ToCharArray().ToList()).ToList();
 
-            var system = new AsteroidsMonitoringSystem(map);
-            var (position, score) = system.GetBestPosition();
+                var system = new AsteroidsMonitoringSystem(map);
+                var (position, score) = system.GetBestPosition();
 
-            WriteToConsole($"The best position for the monitoring system is ({position.X}, {position.Y}) with a score of {score}");
+                WriteToConsole($"The best position for the monitoring system is ({position.X}, {position.Y}) with a score of {score}");
 
-            var sequence = system.GetVaporizationSequence(position);
-            var destroy = sequence[199];
+                var sequence = system.GetVaporizationSequence(position);
+                var destroy = sequence[199];
 
-            WriteToConsole($"The asteroid which is destroy at position 200 is at ({destroy.X}, {destroy.Y})");
+                WriteToConsole($"The asteroid which is destroy at position 200 is at ({destroy.X}, {destroy.Y})");
+            });
         }
 
         /// <summary>
@@ -414,25 +443,31 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute11()
         {
-            WriteToConsole("Start execution of Day11");
-            var parser = GetInputParser("Day11Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day11");
+                var parser = GetInputParser("Day11Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-            var hullPaintingRobot = new HullPaintingRobot(code);
-            hullPaintingRobot.Paint(0);
+                var hullPaintingRobot = new HullPaintingRobot(code);
+                hullPaintingRobot.Paint(0);
 
-            WriteToConsole($"The hull paining robot has painted {hullPaintingRobot.PaintedPanels.Count} at least once");
+                WriteToConsole($"The hull paining robot has painted {hullPaintingRobot.PaintedPanels.Count} at least once");
 
-            WriteToConsole($"Now we start with a white panel instead of a black one.");
+                WriteToConsole($"Now we start with a white panel instead of a black one.");
 
-            hullPaintingRobot = new HullPaintingRobot(code);
-            hullPaintingRobot.Paint(1);
+                hullPaintingRobot = new HullPaintingRobot(code);
+                hullPaintingRobot.Paint(1);
 
-            var painting = hullPaintingRobot.GetPainting();
+                var painting = hullPaintingRobot.GetPainting();
 
-            var dialog = new ImageDisplay(painting);
-            dialog.Show();
+                RunInUiThread(() =>
+                {
+                    var dialog = new ImageDisplay(painting);
+                    dialog.Show();
+                });
+            });
         }
 
         /// <summary>
@@ -440,13 +475,15 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute12()
         {
-            WriteToConsole("Start execution of Day12");
-            var IO = new IntVector(-3, 15, -11);
-            var Europa = new IntVector(3, 13, -19);
-            var Ganymede = new IntVector(-13, 18, -2);
-            var Callisto = new IntVector(6, 0, -1);
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day12");
+                var IO = new IntVector(-3, 15, -11);
+                var Europa = new IntVector(3, 13, -19);
+                var Ganymede = new IntVector(-13, 18, -2);
+                var Callisto = new IntVector(6, 0, -1);
 
-            var system = new MoonMonitoringSystem(new List<IntVector>
+                var system = new MoonMonitoringSystem(new List<IntVector>
             {
                 IO,
                 Europa,
@@ -454,12 +491,12 @@ namespace AdventOfCode.ViewModels
                 Callisto,
             });
 
-            system.Simulate(1000);
-            var energy = system.GetTotalEnegry();
+                system.Simulate(1000);
+                var energy = system.GetTotalEnegry();
 
-            WriteToConsole($"The total energy in the system after 1000 timesteps is {energy}");
+                WriteToConsole($"The total energy in the system after 1000 timesteps is {energy}");
 
-            system = new MoonMonitoringSystem(new List<IntVector>
+                system = new MoonMonitoringSystem(new List<IntVector>
             {
                 IO,
                 Europa,
@@ -467,9 +504,10 @@ namespace AdventOfCode.ViewModels
                 Callisto,
             });
 
-            var count = system.GetRepetitionCount();
+                var count = system.GetRepetitionCount();
 
-            WriteToConsole($"The moons return to their position after {count} time steps");
+                WriteToConsole($"The moons return to their position after {count} time steps");
+            });
         }
 
         /// <summary>
@@ -477,21 +515,24 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute13()
         {
-            WriteToConsole("Start execution of Day13");
-            var parser = GetInputParser("Day13Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day13");
+                var parser = GetInputParser("Day13Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-            var game = new ArcadeGame(code);
-            game.Start();
-            var blocks = game.Tiles.Where(t => t.Id == TileId.Block).Count();
+                var game = new ArcadeGame(code);
+                game.Start();
+                var blocks = game.Tiles.Where(t => t.Id == TileId.Block).Count();
 
-            WriteToConsole($"The number of blocks in the game is {blocks}");
+                WriteToConsole($"The number of blocks in the game is {blocks}");
 
-            game = new ArcadeGame(code);
-            game.PlayFree();
+                game = new ArcadeGame(code);
+                game.PlayFree();
 
-            WriteToConsole($"The final score is {game.Score}");
+                WriteToConsole($"The final score is {game.Score}");
+            });
         }
 
         /// <summary>
@@ -499,19 +540,22 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute14()
         {
-            WriteToConsole("Start execution of Day14");
-            var parser = GetInputParser("Day14Input.txt");
-            var reactions = parser.GetInputData();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day14");
+                var parser = GetInputParser("Day14Input.txt");
+                var reactions = parser.GetInputData();
 
-            var factory = new NanoFactory(reactions);
-            var raw = factory.GetRawMaterialFor(new ReactionTerm("FUEL", 1));
-            var ore = raw.FirstOrDefault(e => e.Element == "ORE");
+                var factory = new NanoFactory(reactions);
+                var raw = factory.GetRawMaterialFor(new ReactionTerm("FUEL", 1));
+                var ore = raw.FirstOrDefault(e => e.Element == "ORE");
 
-            WriteToConsole($"In order to produce one unit of FUEL {ore.Quantity} units ORE are needed");
+                WriteToConsole($"In order to produce one unit of FUEL {ore.Quantity} units ORE are needed");
 
-            var maxProduction = factory.GetProductionCapacity("FUEL", new ReactionTerm("ORE", 1000000000000));
+                var maxProduction = factory.GetProductionCapacity("FUEL", new ReactionTerm("ORE", 1000000000000));
 
-            WriteToConsole($"With 1000000000000 of ORE {maxProduction} units FUEL might be produced");
+                WriteToConsole($"With 1000000000000 of ORE {maxProduction} units FUEL might be produced");
+            });
         }
 
         /// <summary>
@@ -519,26 +563,32 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute15()
         {
-            WriteToConsole("Start execution of Day15");
-            var parser = GetInputParser("Day15Input.txt");
-            var originalCode = parser.GetIntCode();
-            var code = originalCode.ToList();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day15");
+                var parser = GetInputParser("Day15Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
-            var droid = new RepairDroid(code);
-            droid.Explore();
+                var droid = new RepairDroid(code);
+                droid.Explore();
 
-            var route = droid.GetShortestRoute(new IntVector(0, 0), droid.OxygenSystem);
+                var route = droid.GetShortestRoute(new IntVector(0, 0), droid.OxygenSystem);
 
-            var map = droid.GetRouteMap(route);
+                var map = droid.GetRouteMap(route);
 
-            var dialog = new ImageDisplay(map);
-            dialog.Show();
+                RunInUiThread(() =>
+                {
+                    var dialog = new ImageDisplay(map);
+                    dialog.Show();
+                });
 
-            WriteToConsole($"The droid needed {route.Count - 1} movement commands to locate the oxygen system");
+                WriteToConsole($"The droid needed {route.Count - 1} movement commands to locate the oxygen system");
 
-            var time = droid.GetOxygenSpreadingTime(droid.OxygenSystem);
+                var time = droid.GetOxygenSpreadingTime(droid.OxygenSystem);
 
-            WriteToConsole($"It takes {time} minutes until the area is filled with oxygen");
+                WriteToConsole($"It takes {time} minutes until the area is filled with oxygen");
+            });
         }
 
         /// <summary>
@@ -546,22 +596,25 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute16()
         {
-            WriteToConsole("Start execution of Day16");
-            var parser = GetInputParser("Day16Input.txt");
-            var data = parser.GetInputData();
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day16");
+                var parser = GetInputParser("Day16Input.txt");
+                var data = parser.GetInputData();
 
-            var fft = new FFT(data.First());
-            fft.Run(100);
+                var fft = new FFT(data.First());
+                fft.Run(100);
 
-            var first8 = fft.Signal.Substring(0, 8);
+                var first8 = fft.Signal.Substring(0, 8);
 
-            WriteToConsole($"The first 8 digits after 100 iteration are {first8}");
+                WriteToConsole($"The first 8 digits after 100 iteration are {first8}");
 
-            fft = new FFT(data.First());
-            fft.RepeatSignal(10_000);
-            fft.RunForMessage(100);
+                fft = new FFT(data.First());
+                fft.RepeatSignal(10_000);
+                fft.RunForMessage(100);
 
-            WriteToConsole($"The final message is {fft.Message}");
+                WriteToConsole($"The final message is {fft.Message}");
+            });
         }
 
         /// <summary>
@@ -569,7 +622,37 @@ namespace AdventOfCode.ViewModels
         /// </summary>
         public void Execute17()
         {
+            UserActionAsync(() =>
+            {
+                WriteToConsole("Start execution of Day17");
+                var parser = GetInputParser("Day17Input.txt");
+                var originalCode = parser.GetIntCode();
+                var code = originalCode.ToList();
 
+                var ascii = new ASCII(code);
+                ascii.Scan();
+                var checkSum = ascii.GetAlignmentParameters().Sum();
+
+                var map = ascii.GetScaffoldMap();
+
+                RunInUiThread(() =>
+                {
+                    var dialog = new ImageDisplay(map);
+                    dialog.SetText(ascii.VacuumRobot.X, ascii.VacuumRobot.Y, ascii.VacuumRobotStatus.ToString());
+                    dialog.Show();
+                });
+
+                WriteToConsole($"The sum of the alignment parameters is {checkSum}");
+
+                var main = new List<char> { 'C', ',', 'A', ',', 'C', ',', 'A', ',', 'B', ',', 'C', ',', 'A', ',', 'B', ',', 'C', ',', 'B', '\n' };
+                var a = new List<char> { 'L', ',', '8', ',', 'L', ',', '6', ',', 'L', ',', '9', ',', '1', ',', 'L', ',', '6', '\n' };
+                var b = new List<char> { 'R', ',', '6', ',', 'L', ',', '8', ',', 'L', ',', '9', ',', '1', ',', 'R', ',', '6', '\n' };
+                var c = new List<char> { 'R', ',', '6', ',', 'L', ',', '6', ',', 'L', ',', '9', ',', '1', '\n' };
+
+                ascii.StartRobot(main, a, b, c, true);
+
+                WriteToConsole($"The total dust collected is {ascii.DustCollected}");
+            });
         }
 
         /// <summary>
