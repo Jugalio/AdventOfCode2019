@@ -526,6 +526,14 @@ namespace AdventOfCode.ViewModels
                 game.Start();
                 var blocks = game.Tiles.Where(t => t.Id == TileId.Block).Count();
 
+                var view = game.GetGameView();
+
+                RunInUiThread(() =>
+                {
+                    var dialog = new ImageDisplay(view);
+                    dialog.Show();
+                });
+
                 WriteToConsole($"The number of blocks in the game is {blocks}");
 
                 game = new ArcadeGame(code);

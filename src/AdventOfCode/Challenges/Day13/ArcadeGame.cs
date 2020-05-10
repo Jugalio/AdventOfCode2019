@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using MoreLinq;
 using System.Linq;
 using System.Text;
 
@@ -19,6 +20,9 @@ namespace AdventOfCode.Challenges.Day13
 
         public ObservableCollection<Tile> Tiles = new ObservableCollection<Tile>();
         public int Score;
+
+        public event TileUpdate NewTileValue;
+        public delegate void TileUpdate(Tile t);
 
         /// <summary>
         /// Instanciates a new arcade game
@@ -49,6 +53,41 @@ namespace AdventOfCode.Challenges.Day13
         {
             _computer.Code[0] = 2;
             _computer.Compute();
+        }
+
+        /// <summary>
+        /// Returns a map of the area
+        /// </summary>
+        /// <returns></returns>
+        public List<List<int>> GetGameView()
+        {
+            var minX = Tiles.Min(v => v.X);
+            var maxX = Tiles.Max(v => v.X);
+            var minY = Tiles.Min(v => v.Y);
+            var maxY = Tiles.Max(v => v.Y);
+
+            var map = new List<List<int>>();
+
+            for (int i = 0; i <= maxY - minY; i++)
+            {
+                var newXVector = Enumerable.Repeat(0, maxX - minX + 1).ToList();
+                map.Add(newXVector);
+            }
+
+            Tiles.ToList().ForEach(p =>
+            {
+                map[p.Y - minY][p.X - minX] = p.Id switch
+                {
+                    TileId.Block => 0,
+                    TileId.Empty => 1,
+                    TileId.Ball => 2,
+                    TileId.HorizontalPaddle => 3,
+                    TileId.Wall => 2,
+                    _ => 3,
+                };
+            });
+
+            return map;
         }
 
         /// <summary>
@@ -118,12 +157,20 @@ namespace AdventOfCode.Challenges.Day13
                     }
 
                     var exists = Tiles.FirstOrDefault(t => t.X == x && t.Y == y);
+                    var index = Tiles.IndexOf(exists);
+
                     if (exists != null)
                     {
-                        Tiles.Remove(exists);
+                        if (exists.Id != (TileId)id)
+                        {
+                            Tiles[index].Id = (TileId)id;
+                            NewTileValue?.Invoke(Tiles[index]);
+                        }
                     }
-
-                    Tiles.Add(tile);
+                    else
+                    {
+                        Tiles.Add(tile);
+                    }                    
                     break;
             }
         }

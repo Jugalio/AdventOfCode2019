@@ -7,11 +7,11 @@ namespace AdventOfCode.Challenges.Day13
     public class Tile
     {
 
-        public long X;
-        public long Y;
+        public int X;
+        public int Y;
         public TileId Id;
 
-        public Tile(long x, long y, long id)
+        public Tile(int x, int y, long id)
         {
             X = x;
             Y = y;
